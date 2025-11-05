@@ -63,10 +63,6 @@ export default function AdminContentPage() {
     isActive: true,
   })
 
-  useEffect(() => {
-    loadData()
-  }, [activeTab])
-
   async function loadData() {
     setLoading(true)
     try {
@@ -94,6 +90,10 @@ export default function AdminContentPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadData()
+  }, [activeTab])
 
   async function saveHero() {
     try {
