@@ -518,9 +518,9 @@ export default function AdminCategoriesPage() {
                     <div className="flex items-center gap-3">
                       <h3 className="font-bold text-ocean-darkGray text-lg">{category.displayName}</h3>
                       {category.isActive ? (
-                        <Eye size={16} className="text-green-600" title="Active" />
+                        <Eye size={16} className="text-green-600" aria-label="Active" />
                       ) : (
-                        <EyeOff size={16} className="text-gray-400" title="Inactive" />
+                        <EyeOff size={16} className="text-gray-400" aria-label="Inactive" />
                       )}
                     </div>
                     <div className="flex items-center gap-4 mt-1 text-sm text-ocean-gray">

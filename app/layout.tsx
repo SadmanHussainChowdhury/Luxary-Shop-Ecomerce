@@ -9,6 +9,9 @@ import PremiumBackground from '@/components/PremiumBackground'
 import ProductComparison from '@/components/ProductComparison'
 import PremiumFooter from '@/components/PremiumFooter'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export const metadata: Metadata = {
   title: 'Luxury Shop - Premium Online Shopping',
   description: 'Shop the latest electronics, fashion, home & garden, and more at great prices.',

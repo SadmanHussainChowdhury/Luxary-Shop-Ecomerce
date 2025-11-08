@@ -1,4 +1,7 @@
+import fs from 'fs'
+import path from 'path'
 import mongoose from 'mongoose'
+import dotenv from 'dotenv'
 
 interface MongooseCache {
   conn: typeof mongoose | null
@@ -10,10 +13,32 @@ declare global {
   var mongooseCache: MongooseCache | undefined
 }
 
+let envLoaded = false
+
 const cached = global.mongooseCache || { conn: null, promise: null }
 global.mongooseCache = cached
 
+function ensureEnvLoaded() {
+  if (envLoaded) return
+
+  const candidates = [
+    path.join(process.cwd(), '.env.local'),
+    path.join(process.cwd(), '..', '.env.local'),
+    path.join(process.cwd(), '..', '..', '.env.local'),
+  ]
+
+  for (const candidatePath of candidates) {
+    if (fs.existsSync(candidatePath)) {
+      dotenv.config({ path: candidatePath, override: true })
+      envLoaded = true
+      return
+    }
+  }
+  envLoaded = true
+}
+
 export async function connectToDatabase() {
+  ensureEnvLoaded()
   if (cached.conn) return cached.conn
   if (!cached.promise) {
     const uri = process.env.MONGODB_URI
@@ -25,8 +50,46 @@ export async function connectToDatabase() {
     const trimmedUri = uri.trim()
     
     // Remove any quotes that might be around the URI
-    const cleanUri = trimmedUri.replace(/^["']|["']$/g, '')
-    
+    let cleanUri = trimmedUri.replace(/^["']|["']$/g, '')
+
+    // Fallback to .env.local if the environment variable was left at the default placeholder
+    if (cleanUri.includes('your-mongodb-connection-string')) {
+      const tryReadEnv = () => {
+        const candidates = [
+          path.join(process.cwd(), '.env.local'),
+          path.join(process.cwd(), '..', '.env.local'),
+          path.join(process.cwd(), '..', '..', '.env.local'),
+        ]
+
+        for (const candidatePath of candidates) {
+          if (fs.existsSync(candidatePath)) {
+            try {
+              const envContents = fs.readFileSync(candidatePath, 'utf8')
+              const match = envContents.match(/^MONGODB_URI=(.*)$/m)
+              if (match) {
+                const raw = match[1]?.trim()
+                if (raw) {
+                  const extracted = raw.replace(/^["']|["']$/g, '')
+                  if (extracted && !extracted.includes('your-mongodb-connection-string')) {
+                    return extracted
+                  }
+                }
+              }
+            } catch (readError) {
+              console.warn(`MONGODB_URI fallback: unable to read ${candidatePath}`, readError)
+            }
+          }
+        }
+        return null
+      }
+
+      const envUri = tryReadEnv()
+      if (envUri) {
+        cleanUri = envUri
+        process.env.MONGODB_URI = envUri
+      }
+    }
+
     if (!cleanUri.startsWith('mongodb://') && !cleanUri.startsWith('mongodb+srv://')) {
       console.error('MONGODB_URI value:', JSON.stringify(uri))
       console.error('Trimmed URI:', JSON.stringify(trimmedUri))

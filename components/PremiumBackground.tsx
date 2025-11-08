@@ -10,8 +10,9 @@ export default function PremiumBackground() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const context = canvas.getContext('2d')
+    if (!context) return
+    const ctx: CanvasRenderingContext2D = context
 
     let animationFrameId: number | null = null
     let isAnimating = true
@@ -39,8 +40,8 @@ export default function PremiumBackground() {
       glow: number
 
       constructor() {
-        this.x = Math.random() * canvas.width
-        this.y = Math.random() * canvas.height
+        this.x = Math.random() * (canvas?.width ?? 0)
+        this.y = Math.random() * (canvas?.height ?? 0)
         this.radius = Math.random() * 3 + 1
         this.vx = (Math.random() - 0.5) * 0.8
         this.vy = (Math.random() - 0.5) * 0.8
@@ -55,6 +56,7 @@ export default function PremiumBackground() {
       }
 
       update() {
+        if (!canvas) return
         this.x += this.vx
         this.y += this.vy
         this.glow += 0.02

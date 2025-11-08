@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { AliExpressProductCard } from '@/components/AliExpressProductCard'
-import { Gift, Sparkles, Zap, Clock, Fire, Tag, ArrowDown } from 'lucide-react'
+import { Gift, Sparkles, Zap, Clock, Flame, Tag, ArrowDown } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ExclusiveDealsPage() {
@@ -132,7 +132,7 @@ export default function ExclusiveDealsPage() {
               <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto mt-12">
                 {[
                   { icon: ArrowDown, value: 'Up to', label: '70% OFF' },
-                  { icon: Fire, value: 'Hot', label: 'Deals' },
+                  { icon: Flame, value: 'Hot', label: 'Deals' },
                   { icon: Zap, value: 'Limited', label: 'Time' },
                 ].map((stat, i) => {
                   const Icon = stat.icon
@@ -211,7 +211,7 @@ export default function ExclusiveDealsPage() {
                   {/* Discount Badge */}
                   {product.discount && (
                     <div className="absolute -top-2 -right-2 z-20 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl flex items-center gap-1">
-                      <Fire size={14} />
+                      <Flame size={14} />
                       {product.discount}% OFF
                     </div>
                   )}

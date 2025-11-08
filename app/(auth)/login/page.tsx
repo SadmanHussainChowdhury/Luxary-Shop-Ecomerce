@@ -1,6 +1,6 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
@@ -35,14 +35,12 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
     
-    const callbackUrl = searchParams.get('callbackUrl') || '/'
-    
     try {
       const res = await signIn('credentials', {
         email,
         password,
         redirect: false,
-        callbackUrl,
+        callbackUrl: searchParams.get('callbackUrl') || '/',
       })
       
       if ((res as any)?.error) {
@@ -50,16 +48,20 @@ export default function LoginPage() {
         toast.error('Invalid email or password')
         setLoading(false)
       } else {
-        // Fetch user session to check role
-        const sessionRes = await fetch('/api/auth/session')
-        const session = await sessionRes.json()
+        // Allow session cookie to be set before reading it
+        await new Promise((resolve) => setTimeout(resolve, 150))
+        const session = await getSession()
         const userRole = (session?.user as any)?.role || 'user'
+        const requestedCallback = searchParams.get('callbackUrl')
+        const fallbackUrl = userRole === 'admin' ? '/admin' : '/'
+        let redirectUrl = res?.url || requestedCallback || fallbackUrl
         
-        // Redirect admin users to admin panel, others to callback URL or home
-        const redirectUrl = userRole === 'admin' ? '/admin' : callbackUrl
+        if (userRole === 'admin') {
+          redirectUrl = '/admin'
+        }
         
         toast.success(userRole === 'admin' ? 'Welcome back, Admin!' : 'Welcome back!')
-        router.push(redirectUrl)
+        router.replace(redirectUrl)
       }
     } catch (err) {
       setError('Something went wrong. Please try again.')

@@ -3,6 +3,8 @@ import { connectToDatabase } from '@/lib/mongoose'
 import { SiteSettings } from '@/models/SiteSettings'
 import { requireAdmin } from '@/lib/auth-server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   try {
     await requireAdmin()

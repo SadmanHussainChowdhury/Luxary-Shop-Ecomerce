@@ -10,8 +10,9 @@ export default function AnimatedBackground() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const context = canvas.getContext('2d')
+    if (!context) return
+    const ctx: CanvasRenderingContext2D = context
 
     const resize = () => {
       canvas.width = window.innerWidth
@@ -30,8 +31,8 @@ export default function AnimatedBackground() {
       color: string
 
       constructor() {
-        this.x = Math.random() * canvas.width
-        this.y = Math.random() * canvas.height
+        this.x = Math.random() * (canvas?.width ?? 0)
+        this.y = Math.random() * (canvas?.height ?? 0)
         this.radius = Math.random() * 2 + 1
         this.vx = (Math.random() - 0.5) * 0.5
         this.vy = (Math.random() - 0.5) * 0.5
@@ -39,6 +40,7 @@ export default function AnimatedBackground() {
       }
 
       update() {
+        if (!canvas) return
         this.x += this.vx
         this.y += this.vy
 
@@ -61,6 +63,7 @@ export default function AnimatedBackground() {
     }
 
     function animate() {
+      if (!canvas || !ctx) return
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       // Draw connections between nearby particles

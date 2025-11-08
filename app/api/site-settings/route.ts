@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongoose'
-import { SiteSettings } from '@/models/SiteSettings'
+import { SiteSettings, type ISiteSettings } from '@/models/SiteSettings'
 
 export async function GET(req: NextRequest) {
   try {
     await connectToDatabase()
     
-    let settings = await SiteSettings.findOne().lean()
-    
-    // If no settings exist, return defaults
+    const settings = await SiteSettings.findOne().lean<ISiteSettings | null>()
+
     if (!settings) {
-      settings = {
+      const defaults: Partial<ISiteSettings> = {
         siteName: 'Luxury Shop',
         siteDescription: 'Premium Online Shopping',
         siteTagline: 'Shop Luxury. Live Premium.',
@@ -24,8 +23,10 @@ export async function GET(req: NextRequest) {
           text: 'New User? Get $10 off! • Free Shipping on orders over $50',
         },
       }
+
+      return NextResponse.json({ settings: defaults })
     }
-    
+
     return NextResponse.json({ settings })
   } catch (error: any) {
     console.error('Error fetching site settings:', error)

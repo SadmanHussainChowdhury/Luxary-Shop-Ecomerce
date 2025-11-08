@@ -27,7 +27,6 @@ const CategorySchema = new Schema<ICategory>(
   { timestamps: true }
 )
 
-CategorySchema.index({ slug: 1 })
 CategorySchema.index({ isActive: 1, order: 1 })
 
 export const Category = models.Category || model<ICategory>('Category', CategorySchema)

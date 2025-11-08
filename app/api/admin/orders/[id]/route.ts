@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Types } from 'mongoose'
 import { connectToDatabase } from '@/lib/mongoose'
-import { Order } from '@/models/Order'
+import { Order, type IOrder } from '@/models/Order'
 import { requireAdmin } from '@/lib/auth-server'
+
+type PopulatedOrder = Omit<IOrder, 'userId'> & {
+  _id: Types.ObjectId
+  userId?: {
+    _id: Types.ObjectId
+    name?: string
+    email?: string
+  } | Types.ObjectId | null
+}
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
@@ -10,15 +20,16 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     const resolvedParams = await Promise.resolve(params)
     const order = await Order.findById(resolvedParams.id)
       .populate('userId', 'name email')
-      .lean()
+      .lean<PopulatedOrder | null>()
     
     if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     
+    const { userId, ...orderData } = order
+    
     // Transform to use 'user' instead of 'userId'
     const transformedOrder = {
-      ...order,
-      user: order.userId || null,
-      userId: undefined,
+      ...orderData,
+      user: userId ?? null,
     }
     
     return NextResponse.json(transformedOrder)

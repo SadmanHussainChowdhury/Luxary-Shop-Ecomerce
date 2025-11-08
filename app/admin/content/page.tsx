@@ -411,7 +411,9 @@ export default function AdminContentPage() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Stats (JSON format: [{"label":"Happy Customers","value":"1M+"}])</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Stats (JSON format: {'[{ "label": "Happy Customers", "value": "1M+" }]'})
+                  </label>
                   <textarea
                     value={JSON.stringify(heroForm.stats, null, 2)}
                     onChange={(e) => {
