@@ -13,23 +13,23 @@ export function FeaturedProductsSection() {
       
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-10 sm:mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-premium-gold/10 rounded-full mb-4">
             <Sparkles className="text-premium-gold" size={20} />
             <span className="text-premium-gold font-bold text-sm">PREMIUM SELECTION</span>
           </div>
-          <h2 className="text-5xl font-bold text-ocean-darkGray mb-3">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-ocean-darkGray mb-3">
             <span className="bg-gradient-to-r from-premium-gold via-premium-amber to-premium-gold bg-clip-text text-transparent">
               Featured Products
             </span>
           </h2>
-          <p className="text-xl text-ocean-gray max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-ocean-gray max-w-2xl mx-auto">
             Hand-picked premium selections with unbeatable prices - Limited time offers!
           </p>
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-5 sm:gap-6 mb-8">
           {featuredProducts.map((product, index) => (
             <ProductCard key={product.id} product={product} index={index} />
           ))}
@@ -59,23 +59,23 @@ export function PopularProductsSection() {
       
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-10 sm:mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-full mb-4">
             <TrendingUp className="text-green-600" size={20} />
             <span className="text-green-600 font-bold text-sm">TRENDING NOW</span>
           </div>
-          <h2 className="text-5xl font-bold text-ocean-darkGray mb-3">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-ocean-darkGray mb-3">
             <span className="bg-gradient-to-r from-green-600 via-green-500 to-green-600 bg-clip-text text-transparent">
               Popular Products
             </span>
           </h2>
-          <p className="text-xl text-ocean-gray max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-ocean-gray max-w-2xl mx-auto">
             Most loved by customers worldwide - Amazing deals with incredible savings!
           </p>
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-5 sm:gap-6 mb-8">
           {popularProducts.map((product, index) => (
             <ProductCard key={product.id} product={product} index={index} />
           ))}

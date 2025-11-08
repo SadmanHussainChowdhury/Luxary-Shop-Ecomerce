@@ -43,7 +43,7 @@ export default function HeroSection() {
 
   if (!heroContent) return null
   return (
-    <section className="relative min-h-[500px] sm:min-h-[550px] md:min-h-[600px] flex items-center overflow-hidden bg-gradient-to-br from-premium-darkBlue via-premium-royalBlue to-premium-electricBlue">
+    <section className="relative min-h-[460px] sm:min-h-[520px] md:min-h-[600px] flex items-center overflow-hidden bg-gradient-to-br from-premium-darkBlue via-premium-royalBlue to-premium-electricBlue">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -97,7 +97,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight"
             >
               {heroContent.title}
               <br />

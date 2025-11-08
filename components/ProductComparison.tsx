@@ -66,7 +66,7 @@ export default function ProductComparison() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-premium-gold to-premium-amber text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl z-40 flex items-center gap-2 font-bold"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-gradient-to-r from-premium-gold to-premium-amber text-white px-4 py-2 sm:px-6 sm:py-3 rounded-full shadow-lg hover:shadow-xl z-40 flex items-center gap-2 font-semibold text-sm sm:text-base"
         >
           Compare ({products.length})
         </motion.button>
@@ -79,35 +79,35 @@ export default function ProductComparison() {
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-premium-gold shadow-2xl z-50 max-h-[80vh] overflow-y-auto"
+            className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-premium-gold shadow-2xl z-50 max-h-[85vh] overflow-y-auto rounded-t-2xl"
           >
-            <div className="container mx-auto px-4 py-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-ocean-darkGray">
+            <div className="container mx-auto px-4 sm:px-6 py-5 sm:py-6 max-w-5xl">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-ocean-darkGray text-center sm:text-left">
                   Compare Products ({products.length})
                 </h2>
-                <div className="flex gap-3">
+                <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3">
                   <button
                     onClick={clearAll}
-                    className="px-4 py-2 border border-red-200 text-red-600 rounded hover:bg-red-50"
+                    className="px-3 py-2 border border-red-200 text-red-600 rounded hover:bg-red-50 text-sm sm:text-base"
                   >
                     Clear All
                   </button>
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="px-4 py-2 bg-ocean-gray text-white rounded hover:bg-ocean-darkGray"
+                    className="px-3 py-2 bg-ocean-gray text-white rounded hover:bg-ocean-darkGray text-sm sm:text-base"
                   >
                     Close
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {products.map((product) => (
                   <div key={product._id} className="relative">
                     <button
                       onClick={() => removeProduct(product.slug)}
-                      className="absolute top-2 right-2 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white"
+                      className="absolute top-2 right-2 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white shadow-sm"
                     >
                       <X size={18} />
                     </button>
@@ -117,13 +117,13 @@ export default function ProductComparison() {
               </div>
 
               {/* Comparison Table */}
-              <div className="mt-8 overflow-x-auto">
-                <table className="w-full border-collapse">
+              <div className="mt-6 sm:mt-8 overflow-x-auto pb-4">
+                <table className="w-full border-collapse text-sm sm:text-base">
                   <thead>
                     <tr className="bg-ocean-lightest">
-                      <th className="border border-ocean-border p-3 text-left">Feature</th>
+                      <th className="border border-ocean-border p-3 text-left min-w-[140px]">Feature</th>
                       {products.map((p) => (
-                        <th key={p._id} className="border border-ocean-border p-3 text-center">
+                        <th key={p._id} className="border border-ocean-border p-3 text-center min-w-[140px]">
                           {p.title}
                         </th>
                       ))}

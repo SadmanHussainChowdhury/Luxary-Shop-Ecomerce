@@ -116,8 +116,8 @@ export default function WorldClassHeader() {
     <header className="relative bg-gradient-to-r from-white/95 via-white/90 to-white/95 backdrop-blur-xl border-b border-premium-gold/20 sticky top-0 z-50 shadow-lg shadow-premium-gold/5">
       <div className="container mx-auto px-4">
         {/* Top bar */}
-        <div className="flex items-center justify-between py-2.5 text-xs sm:text-sm border-b border-premium-gold/20 bg-gradient-to-r from-premium-gold/5 via-premium-amber/5 to-premium-gold/5">
-          <div className="flex items-center gap-3 sm:gap-4 text-ocean-darkGray">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-2.5 text-[11px] sm:text-sm border-b border-premium-gold/20 bg-gradient-to-r from-premium-gold/5 via-premium-amber/5 to-premium-gold/5">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 text-ocean-darkGray">
             <motion.div
               className="flex items-center gap-2 text-premium-gold font-bold"
               animate={{ scale: [1, 1.05, 1] }}
@@ -130,16 +130,16 @@ export default function WorldClassHeader() {
             <span className="hidden md:inline text-ocean-gray">•</span>
             <span className="hidden md:inline text-premium-gold font-semibold">Free Shipping Worldwide</span>
           </div>
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
             <Link 
               href="/register" 
-              className="px-3 py-1 bg-gradient-to-r from-premium-gold/20 to-premium-amber/20 hover:from-premium-gold/30 hover:to-premium-amber/30 rounded-lg font-semibold text-premium-gold transition-all border border-premium-gold/30"
+              className="px-3 py-1 bg-gradient-to-r from-premium-gold/20 to-premium-amber/20 hover:from-premium-gold/30 hover:to-premium-amber/30 rounded-lg font-semibold text-premium-gold transition-all border border-premium-gold/30 w-full sm:w-auto text-center"
             >
               Sign Up & Save $10
             </Link>
             <Link 
               href="/login" 
-              className="hover:text-premium-gold font-medium transition-colors"
+              className="hover:text-premium-gold font-medium transition-colors text-center"
             >
               Sign In
             </Link>
@@ -147,7 +147,7 @@ export default function WorldClassHeader() {
         </div>
 
         {/* Main header */}
-        <div className="flex items-center gap-3 sm:gap-6 py-3 sm:py-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-6 py-3 sm:py-4">
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
