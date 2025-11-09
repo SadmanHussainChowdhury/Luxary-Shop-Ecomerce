@@ -35,7 +35,12 @@ export async function GET(req: NextRequest) {
       })
     }
     
-    return NextResponse.json({ hero: { ...hero, backgroundImage: hero.backgroundImage || DEFAULT_HERO_IMAGE } })
+    return NextResponse.json({
+      hero: {
+        ...hero,
+        backgroundImage: (hero as { backgroundImage?: string }).backgroundImage || DEFAULT_HERO_IMAGE,
+      },
+    })
   } catch (error: any) {
     console.error('Error fetching hero content:', error)
     return NextResponse.json(
