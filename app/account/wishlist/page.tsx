@@ -6,6 +6,7 @@ import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
 const STORAGE_KEY = 'worldclass_wishlist_v1'
+const AUTH_STORAGE_KEY = 'worldclass_signed_in'
 
 function loadWishlist(): string[] {
   if (typeof window === 'undefined') return []
@@ -20,10 +21,18 @@ export default function WishlistPage() {
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [wishlist, setWishlist] = useState<string[]>([])
+  const [signedIn, setSignedIn] = useState<boolean | null>(null)
 
   useEffect(() => {
-    setWishlist(loadWishlist())
-    loadWishlistProducts()
+    if (typeof window === 'undefined') return
+    const flag = localStorage.getItem(AUTH_STORAGE_KEY) === 'true'
+    setSignedIn(flag)
+    if (flag) {
+      setWishlist(loadWishlist())
+      loadWishlistProducts()
+    } else {
+      setLoading(false)
+    }
   }, [])
 
   async function loadWishlistProducts() {
@@ -41,6 +50,31 @@ export default function WishlistPage() {
     const products = (await Promise.all(promises)).filter(Boolean)
     setItems(products)
     setLoading(false)
+  }
+
+  if (signedIn === null) {
+    return (
+      <div className="relative min-h-screen flex items-center justify-center">
+        <div className="text-ocean-gray">Loading wishlist…</div>
+      </div>
+    )
+  }
+
+  if (!signedIn) {
+    return (
+      <div className="bg-ocean-lightest min-h-screen flex items-center justify-center px-4">
+        <div className="bg-white border border-ocean-border rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
+          <h2 className="text-2xl font-bold text-ocean-darkGray mb-4">Sign In Required</h2>
+          <p className="text-ocean-gray mb-6">Sign in to view and manage your wishlist.</p>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 bg-ocean-blue text-white px-6 py-3 rounded font-medium hover:bg-ocean-deep"
+          >
+            Go to Sign In
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {

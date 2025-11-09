@@ -15,6 +15,7 @@ export interface IHeroContent {
   badgeText: string
   isActive: boolean
   order: number
+  backgroundImage?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -35,6 +36,11 @@ const HeroContentSchema = new Schema<IHeroContent>(
     badgeText: { type: String, default: "World's #1 Premium Ecommerce" },
     isActive: { type: Boolean, default: true },
     order: { type: Number, default: 0 },
+    backgroundImage: {
+      type: String,
+      default:
+        'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=2400&q=80',
+    },
   },
   { timestamps: true }
 )

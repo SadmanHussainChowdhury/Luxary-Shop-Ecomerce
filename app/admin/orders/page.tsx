@@ -242,7 +242,11 @@ export default function AdminOrdersPage() {
                         </h3>
                         <p className="text-sm text-ocean-gray flex items-center gap-2">
                           <Calendar size={14} />
-                          {new Date(o.createdAt || Date.now()).toLocaleDateString()}
+                          {new Date(o.createdAt || Date.now()).toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
                         </p>
                       </div>
                       <span

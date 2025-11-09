@@ -3,12 +3,35 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { Upload, RefreshCw } from 'lucide-react'
+
+const DEFAULT_SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80&auto=format&fit=crop'
+
+async function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = (err) => reject(err)
+    reader.readAsDataURL(file)
+  })
+}
 
 export default function AdminEditProductPage() {
   const { id } = useParams() as { id: string }
   const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [form, setForm] = useState<any>({ title: '', slug: '', price: 0, countInStock: 0, description: '', image: '', isFeatured: false, category: '', brand: '' })
+  const [form, setForm] = useState<any>({
+    title: '',
+    slug: '',
+    price: 0,
+    countInStock: 0,
+    description: '',
+    image: '',
+    isFeatured: false,
+    category: '',
+    brand: '',
+    imageFile: null as File | null,
+  })
 
   useEffect(() => {
     ;(async () => {
@@ -26,10 +49,11 @@ export default function AdminEditProductPage() {
           price: data.price || 0,
           countInStock: data.countInStock || 0,
           description: data.description || '',
-          image: data.images?.[0]?.url || '',
+          image: data.images?.[0]?.url || DEFAULT_SAMPLE_IMAGE,
           isFeatured: !!data.isFeatured,
           category: data.category || '',
           brand: data.brand || '',
+          imageFile: null,
         })
       } catch (error) {
         console.error('Failed to load product:', error)
@@ -42,13 +66,14 @@ export default function AdminEditProductPage() {
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
+    const { imageFile, ...payload } = form
     const body = {
       title: form.title,
       slug: form.slug,
       price: Number(form.price),
       countInStock: Number(form.countInStock),
       description: form.description,
-      images: form.image ? [{ url: form.image }] : [],
+      images: (payload.image || DEFAULT_SAMPLE_IMAGE) ? [{ url: payload.image || DEFAULT_SAMPLE_IMAGE }] : [],
       isFeatured: !!form.isFeatured,
       category: form.category,
       brand: form.brand,
@@ -84,9 +109,69 @@ export default function AdminEditProductPage() {
             <input type="number" min={0} value={form.countInStock} onChange={(e) => setForm((f: any) => ({ ...f, countInStock: e.target.value }))} required className="w-full rounded border border-ocean-border px-3 py-2" />
           </div>
         </div>
-        <div>
-          <label className="mb-1 block text-sm">Image URL</label>
-          <input value={form.image} onChange={(e) => setForm((f: any) => ({ ...f, image: e.target.value }))} className="w-full rounded border border-ocean-border px-3 py-2" />
+        <div className="space-y-3">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Image</label>
+            <input
+              value={form.image}
+              onChange={(e) => setForm((f: any) => ({ ...f, image: e.target.value, imageFile: null }))}
+              className="w-full rounded border border-ocean-border px-3 py-2"
+              placeholder="Enter image URL or upload a file"
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <label
+              htmlFor="productImageFile"
+              className="inline-flex items-center gap-2 bg-ocean-blue text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-ocean-deep transition"
+            >
+              <Upload size={18} /> Upload File
+              <input
+                type="file"
+                id="productImageFile"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  try {
+                    const dataUrl = await fileToDataUrl(file)
+                    setForm((prev: any) => ({ ...prev, image: dataUrl, imageFile: file }))
+                    toast.success('Image ready to save')
+                  } catch (error) {
+                    console.error('Failed to read file', error)
+                    toast.error('Failed to read image file')
+                  }
+                }}
+                className="hidden"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => setForm((prev: any) => ({ ...prev, image: DEFAULT_SAMPLE_IMAGE, imageFile: null }))}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-ocean-border rounded-lg hover:bg-ocean-lightest"
+            >
+              <RefreshCw size={18} /> Use Sample
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm((prev: any) => ({ ...prev, image: '', imageFile: null }))}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50"
+            >
+              Clear
+            </button>
+          </div>
+          {form.image && (
+            <div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={form.image}
+                alt="Preview"
+                className="h-36 w-36 rounded-lg border border-ocean-border object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = DEFAULT_SAMPLE_IMAGE
+                }}
+              />
+            </div>
+          )}
         </div>
         <div>
           <label className="mb-1 block text-sm">Description</label>
@@ -106,6 +191,13 @@ export default function AdminEditProductPage() {
         <div className="flex gap-3">
           <button className="w-full bg-ocean-blue text-white py-3 px-4 rounded font-medium hover:bg-ocean-deep">
             Save Product
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/admin/products')}
+            className="w-full rounded border border-ocean-border px-4 py-3 font-medium hover:bg-ocean-lightest"
+          >
+            Cancel
           </button>
         </div>
       </form>

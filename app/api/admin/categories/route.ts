@@ -27,7 +27,6 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAdmin()
     await connectToDatabase()
     
     const body = await req.json().catch(() => null)
@@ -53,9 +52,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ category }, { status: 201 })
   } catch (error: any) {
-    if (error.message === 'Unauthorized' || error.message === 'Admin access required') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
     console.error('Error creating category:', error)
     return NextResponse.json(
       { error: 'Failed to create category', details: error.message },

@@ -3,6 +3,9 @@ import { connectToDatabase } from '@/lib/mongoose'
 import { HeroContent } from '@/models/HeroContent'
 import { requireAdmin } from '@/lib/auth-server'
 
+const DEFAULT_HERO_IMAGE =
+  'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=2400&q=80'
+
 export async function GET(req: NextRequest) {
   try {
     await requireAdmin()
@@ -44,6 +47,7 @@ export async function POST(req: NextRequest) {
       badgeText: body.badgeText || "World's #1 Premium Ecommerce",
       isActive: body.isActive !== undefined ? body.isActive : true,
       order: body.order || 0,
+      backgroundImage: body.backgroundImage || '',
     })
     
     return NextResponse.json({ id: hero._id.toString(), message: 'Hero content created successfully' })

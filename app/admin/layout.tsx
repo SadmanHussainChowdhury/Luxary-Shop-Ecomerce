@@ -1,8 +1,8 @@
 'use client'
 
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { LayoutDashboard, Package, ShoppingCart, Home, Settings, BarChart3, Users, Bell, LogOut, Shield, Grid, FileText } from 'lucide-react'
@@ -18,48 +18,10 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
-  const router = useRouter()
-  const { data: session, status } = useSession()
-  const [isLoading, setIsLoading] = useState(true)
-  
-  useEffect(() => {
-    if (status === 'loading') {
-      setIsLoading(true)
-      return
-    }
-    
-    if (status === 'unauthenticated') {
-      router.push('/login?callbackUrl=' + encodeURIComponent(pathname || '/admin'))
-      return
-    }
-    
-    if (status === 'authenticated') {
-      const userRole = (session?.user as any)?.role || 'user'
-      if (userRole !== 'admin') {
-        router.push('/')
-        return
-      }
-      setIsLoading(false)
-    }
-  }, [status, session, router, pathname])
-  
+  const { data: session } = useSession()
+
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' })
-  }
-  
-  if (isLoading || status === 'loading') {
-    return (
-      <div className="min-h-screen bg-ocean-lightest flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-premium-gold border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-ocean-gray">Loading admin panel...</p>
-        </div>
-      </div>
-    )
-  }
-  
-  if (!session || (session.user as any)?.role !== 'admin') {
-    return null // Will redirect via useEffect
   }
   
   return (
@@ -86,7 +48,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </motion.div>
               </div>
               <p className="text-ocean-gray mt-1">
-                Welcome, {session.user?.name || session.user?.email} • Manage your e-commerce store
+                Welcome, {session?.user?.name || session?.user?.email || 'Guest'} • Manage your e-commerce store
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -97,15 +59,17 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 <Home size={18} />
                 Back to Store
               </Link>
-              <motion.button
-                onClick={handleLogout}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium"
-              >
-                <LogOut size={18} />
-                Logout
-              </motion.button>
+              {session?.user && (
+                <motion.button
+                  onClick={handleLogout}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium"
+                >
+                  <LogOut size={18} />
+                  Logout
+                </motion.button>
+              )}
             </div>
           </div>
           

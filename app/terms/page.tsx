@@ -15,7 +15,7 @@ export default function TermsPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-ocean-darkGray mb-4">
             Terms & Conditions
           </h1>
-          <p className="text-ocean-gray">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="text-ocean-gray">Last updated: January 1, 2025</p>
         </div>
 
         <div className="bg-white border border-ocean-border rounded-xl p-8 space-y-8">

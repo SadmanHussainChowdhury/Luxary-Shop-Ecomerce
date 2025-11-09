@@ -1,47 +1,107 @@
 'use client'
 
-import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { User, ShoppingBag, Heart, Settings, LogOut } from 'lucide-react'
+import { toast } from 'sonner'
+
+const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
+const ORDERS_STORAGE_KEY = 'worldclass_orders_v1'
+const AUTH_STORAGE_KEY = 'worldclass_signed_in'
+
+const DEFAULT_PROFILE = {
+  name: 'Guest Shopper',
+  email: 'guest@example.com',
+  phone: '',
+}
+
+const SAMPLE_ORDERS = [
+  {
+    _id: 'SO-482391',
+    createdAt: '2024-05-12T10:32:00.000Z',
+    total: 249.99,
+    status: 'delivered',
+  },
+  {
+    _id: 'SO-482112',
+    createdAt: '2024-04-30T15:20:00.000Z',
+    total: 129.0,
+    status: 'processing',
+  },
+  {
+    _id: 'SO-481993',
+    createdAt: '2024-04-18T09:15:00.000Z',
+    total: 89.5,
+    status: 'shipped',
+  },
+]
+
+function loadProfile() {
+  if (typeof window === 'undefined') return DEFAULT_PROFILE
+  try {
+    const stored = localStorage.getItem(PROFILE_STORAGE_KEY)
+    if (!stored) return DEFAULT_PROFILE
+    const parsed = JSON.parse(stored)
+    return { ...DEFAULT_PROFILE, ...parsed }
+  } catch {
+    return DEFAULT_PROFILE
+  }
+}
+
+function loadOrders() {
+  if (typeof window === 'undefined') return SAMPLE_ORDERS
+  try {
+    const stored = localStorage.getItem(ORDERS_STORAGE_KEY)
+    if (!stored) return SAMPLE_ORDERS
+    const parsed = JSON.parse(stored)
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    return SAMPLE_ORDERS
+  } catch {
+    return SAMPLE_ORDERS
+  }
+}
 
 export default function AccountPage() {
-  const { data: session, status } = useSession()
   const [orders, setOrders] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState(DEFAULT_PROFILE)
+  const [signedIn, setSignedIn] = useState<boolean | null>(null)
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      // Load user orders
-      fetch('/api/orders/my')
-        .then((res) => res.json())
-        .then((data) => {
-          setOrders(data.items || [])
-          setLoading(false)
-        })
-        .catch(() => setLoading(false))
+    if (typeof window === 'undefined') return
+    const flag = localStorage.getItem(AUTH_STORAGE_KEY) === 'true'
+    setSignedIn(flag)
+    if (flag) {
+      setProfile(loadProfile())
+      setOrders(loadOrders())
     }
-  }, [status])
+  }, [])
 
-  if (status === 'loading') {
+  function handleSignOut() {
+    if (typeof window === 'undefined') return
+    localStorage.removeItem(AUTH_STORAGE_KEY)
+    toast.success('Signed out')
+    setSignedIn(false)
+  }
+
+  if (signedIn === null) {
     return (
       <div className="relative min-h-screen flex items-center justify-center">
-        <div className="text-ocean-gray">Loading...</div>
+        <div className="text-ocean-gray">Loading account…</div>
       </div>
     )
   }
 
-  if (status === 'unauthenticated') {
+  if (!signedIn) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center">
-        <div className="bg-white border border-ocean-border rounded p-8 max-w-md w-full text-center">
+      <div className="relative min-h-screen flex items-center justify-center bg-ocean-lightest">
+        <div className="bg-white border border-ocean-border rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
           <h2 className="text-2xl font-bold text-ocean-darkGray mb-4">Sign In Required</h2>
-          <p className="text-ocean-gray mb-6">Please sign in to view your account</p>
+          <p className="text-ocean-gray mb-6">Please sign in to access your account dashboard.</p>
           <Link
             href="/login"
-            className="inline-block bg-ocean-blue text-white px-6 py-3 rounded font-medium hover:bg-ocean-deep"
+            className="inline-flex items-center justify-center gap-2 bg-ocean-blue text-white px-6 py-3 rounded font-medium hover:bg-ocean-deep"
           >
-            Sign In
+            Go to Sign In
           </Link>
         </div>
       </div>
@@ -58,10 +118,10 @@ export default function AccountPage() {
           <div className="bg-white border border-ocean-border rounded p-6">
             <div className="mb-6">
               <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center text-white text-2xl font-bold mb-3">
-                {(session?.user?.name?.[0] || 'U').toUpperCase()}
+                {(profile.name?.[0] || 'U').toUpperCase()}
               </div>
-              <h3 className="font-bold text-ocean-darkGray">{session?.user?.name || 'User'}</h3>
-              <p className="text-sm text-ocean-gray">{session?.user?.email}</p>
+              <h3 className="font-bold text-ocean-darkGray">{profile.name}</h3>
+              <p className="text-sm text-ocean-gray">{profile.email}</p>
             </div>
 
             <nav className="space-y-2">
@@ -94,12 +154,15 @@ export default function AccountPage() {
                 <span>Settings</span>
               </Link>
               <button
-                onClick={() => signOut({ callbackUrl: '/' })}
+                onClick={handleSignOut}
                 className="flex items-center gap-3 p-3 rounded text-ocean-darkGray hover:bg-ocean-lighter w-full text-left"
               >
                 <LogOut size={20} />
                 <span>Sign Out</span>
               </button>
+              <p className="text-xs text-ocean-gray/80 leading-relaxed pt-2 border-t border-ocean-border/60 mt-4">
+                Account data is stored locally in your browser. Visit Settings to update your profile or reset demo data.
+              </p>
             </nav>
           </div>
 
@@ -114,39 +177,45 @@ export default function AccountPage() {
                   <div className="text-sm text-ocean-gray">Total Orders</div>
                 </div>
                 <div className="border border-ocean-border rounded p-4">
-                  <div className="text-2xl font-bold text-ocean-blue mb-1">0</div>
-                  <div className="text-sm text-ocean-gray">Pending Orders</div>
+                  <div className="text-2xl font-bold text-ocean-blue mb-1">
+                    {orders.filter((o) => o.status === 'processing' || o.status === 'pending').length}
+                  </div>
+                  <div className="text-sm text-ocean-gray">Open Orders</div>
                 </div>
               </div>
 
               <div>
                 <h3 className="font-semibold text-ocean-darkGray mb-4">Recent Orders</h3>
-                {loading ? (
-                  <div className="text-ocean-gray">Loading orders...</div>
-                ) : orders.length === 0 ? (
+                {orders.length === 0 ? (
                   <div className="text-ocean-gray py-8 text-center">
                     No orders yet. <Link href="/products" className="text-ocean-blue hover:underline">Start Shopping</Link>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {orders.slice(0, 5).map((order: any) => (
+                    {orders.slice(0, 5).map((order: any) => {
+                      const createdAt = new Date(order.createdAt)
+                      const dateDisplay = createdAt.toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })
+                      return (
                       <Link
                         key={order._id}
-                        href={`/account/orders/${order._id}`}
+                        href={`/account/orders?order=${order._id}`}
                         className="flex items-center justify-between p-4 border border-ocean-border rounded hover:shadow transition"
                       >
                         <div>
                           <div className="font-medium text-ocean-darkGray">Order #{order._id.slice(-8)}</div>
-                          <div className="text-sm text-ocean-gray">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </div>
+                          <div className="text-sm text-ocean-gray">{dateDisplay}</div>
                         </div>
                         <div className="text-right">
-                          <div className="font-bold text-ocean-blue">${order.total}</div>
+                          <div className="font-bold text-ocean-blue">${Number(order.total || 0).toFixed(2)}</div>
                           <div className="text-xs text-ocean-gray capitalize">{order.status}</div>
                         </div>
                       </Link>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>

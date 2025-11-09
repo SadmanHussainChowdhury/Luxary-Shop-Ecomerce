@@ -1,6 +1,8 @@
 'use client'
 
-import { Search, Grid, Zap, Shirt, Home, Headphones, ShoppingBag, Watch, Heart, Activity, Sparkles, Crown, Menu, X } from 'lucide-react'
+import { Search, Grid, Sparkles, Crown, Menu, X } from 'lucide-react'
+import * as Icons from 'lucide-react'
+import type { LucideProps } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
@@ -8,83 +10,41 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import CartButton from './CartButton'
 
-// Icon mapping
-const iconMap: Record<string, any> = {
-  Grid, Zap, Shirt, Home, Headphones, ShoppingBag, Watch, Heart, Activity
+type SiteSettings = {
+  siteName?: string
+  siteTagline?: string
+  promotionalBanner?: {
+    enabled?: boolean
+    text?: string
+    link?: string
+  }
 }
 
-// Static fallback categories (like previously added)
-const staticCategories = [
-  {
-    _id: 'static-electronics',
-    name: 'Electronics',
-    slug: 'electronics',
-    displayName: 'Electronics',
-    icon: 'Zap',
-    color: 'from-blue-500 to-blue-600',
-  },
-  {
-    _id: 'static-fashion',
-    name: 'Fashion',
-    slug: 'fashion',
-    displayName: 'Fashion',
-    icon: 'Shirt',
-    color: 'from-pink-500 to-pink-600',
-  },
-  {
-    _id: 'static-home',
-    name: 'Home & Garden',
-    slug: 'home-garden',
-    displayName: 'Home & Garden',
-    icon: 'Home',
-    color: 'from-purple-500 to-purple-600',
-  },
-  {
-    _id: 'static-audio',
-    name: 'Audio',
-    slug: 'audio',
-    displayName: 'Audio',
-    icon: 'Headphones',
-    color: 'from-green-500 to-green-600',
-  },
-  {
-    _id: 'static-bags',
-    name: 'Bags',
-    slug: 'bags',
-    displayName: 'Bags',
-    icon: 'ShoppingBag',
-    color: 'from-amber-500 to-amber-600',
-  },
-  {
-    _id: 'static-accessories',
-    name: 'Accessories',
-    slug: 'accessories',
-    displayName: 'Accessories',
-    icon: 'Watch',
-    color: 'from-red-500 to-red-600',
-  },
-  {
-    _id: 'static-beauty',
-    name: 'Beauty',
-    slug: 'beauty',
-    displayName: 'Beauty',
-    icon: 'Heart',
-    color: 'from-rose-500 to-rose-600',
-  },
-  {
-    _id: 'static-sports',
-    name: 'Sports',
-    slug: 'sports',
-    displayName: 'Sports',
-    icon: 'Activity',
-    color: 'from-indigo-500 to-indigo-600',
-  },
-]
+type CategorySummary = {
+  _id?: string
+  name: string
+  slug?: string
+  displayName: string
+  icon?: string
+  color?: string
+}
+
+function getIcon(iconName?: string) {
+  if (!iconName) {
+    return Icons.Grid
+  }
+  const IconComponent = (Icons as Record<string, React.ComponentType<LucideProps>>)[iconName]
+  return IconComponent || Icons.Grid
+}
 
 export default function WorldClassHeader() {
   const [search, setSearch] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [categories, setCategories] = useState<any[]>([])
+  const [categories, setCategories] = useState<CategorySummary[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const [categoryError, setCategoryError] = useState<string | null>(null)
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null)
+  const [settingsError, setSettingsError] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -92,24 +52,55 @@ export default function WorldClassHeader() {
   const isAdmin = (session?.user as any)?.role === 'admin'
   const activeCategory = searchParams.get('category') || ''
 
+  const siteName = siteSettings?.siteName?.trim() || 'Luxury Shop'
+  const siteTagline = siteSettings?.siteTagline?.trim() || 'Shop Luxury. Live Premium.'
+  const promotionalBanner = siteSettings?.promotionalBanner || {}
+  const promoEnabled = promotionalBanner.enabled ?? true
+  const promoText = promotionalBanner.text?.trim() || ''
+  const promoLink = promotionalBanner.link?.trim() || '/products'
+  const promoSegments = promoText ? promoText.split('•').map((segment) => segment.trim()).filter(Boolean) : []
+
   useEffect(() => {
     async function loadCategories() {
       try {
+        setCategoriesLoading(true)
         const res = await fetch('/api/categories?active=true')
-        const data = await res.json()
-        if (data.categories && data.categories.length > 0) {
-          setCategories(data.categories)
-        } else {
-          // Use static categories if no categories in database
-          setCategories(staticCategories)
+        if (!res.ok) {
+          throw new Error(`Failed to load categories: ${res.statusText}`)
         }
-      } catch (error) {
+        const data = await res.json()
+        const dynamicCategories: CategorySummary[] = Array.isArray(data.categories) ? data.categories : []
+        setCategories(dynamicCategories)
+        setCategoryError(null)
+      } catch (error: any) {
         console.error('Failed to load categories:', error)
-        // Use static categories on error
-        setCategories(staticCategories)
+        setCategoryError(error.message || 'Failed to load categories.')
+        setCategories([])
+      } finally {
+        setCategoriesLoading(false)
       }
     }
     loadCategories()
+  }, [])
+
+  useEffect(() => {
+    async function loadSiteSettings() {
+      try {
+        const res = await fetch('/api/site-settings', { next: { revalidate: 0 } })
+        if (!res.ok) {
+          throw new Error(`Failed to load site settings: ${res.statusText}`)
+        }
+        const data = await res.json()
+        setSiteSettings(data)
+        setSettingsError(null)
+      } catch (error: any) {
+        console.error('Failed to load site settings:', error)
+        setSettingsError(error.message || 'Failed to load site settings.')
+        setSiteSettings(null)
+      }
+    }
+
+    loadSiteSettings()
   }, [])
 
   return (
@@ -124,11 +115,19 @@ export default function WorldClassHeader() {
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
               <Sparkles size={14} className="fill-premium-gold text-premium-gold" />
-              <span className="hidden sm:inline">Limited Time: Up to 70% OFF</span>
-              <span className="sm:hidden">70% OFF</span>
+              <span className="hidden sm:inline">{siteTagline}</span>
+              <span className="sm:hidden">{siteName}</span>
             </motion.div>
-            <span className="hidden md:inline text-ocean-gray">•</span>
-            <span className="hidden md:inline text-premium-gold font-semibold">Free Shipping Worldwide</span>
+            {promoEnabled && promoSegments.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 text-premium-gold font-semibold">
+                {promoSegments.map((segment, index) => (
+                  <span key={index} className="flex items-center gap-2 whitespace-nowrap">
+                    <span className="hidden md:inline text-ocean-gray">•</span>
+                    {segment}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
             <Link 
@@ -143,8 +142,21 @@ export default function WorldClassHeader() {
             >
               Sign In
             </Link>
+            {promoEnabled && promoLink && (
+              <Link
+                href={promoLink}
+                className="px-3 py-1 bg-white text-premium-gold border border-premium-gold/40 rounded-lg font-semibold hover:bg-premium-gold hover:text-white transition-all w-full sm:w-auto text-center"
+              >
+                Shop Promo
+              </Link>
+            )}
           </div>
         </div>
+        {settingsError && (
+          <div className="py-2 text-center text-xs text-red-600">
+            {settingsError}
+          </div>
+        )}
 
         {/* Main header */}
         <div className="flex flex-wrap items-center gap-3 sm:gap-6 py-3 sm:py-4">
@@ -215,7 +227,7 @@ export default function WorldClassHeader() {
                   backgroundSize: '200% 100%',
                 }}
               >
-                Luxury Shop
+                {siteName}
               </motion.span>
               
               {/* Shimmer effect overlay */}
@@ -409,24 +421,38 @@ export default function WorldClassHeader() {
           
           {/* Category Links */}
           <div className="flex items-center gap-4 flex-1">
-            {categories.map((category) => {
-              const Icon = iconMap[category.icon] || Grid
-              const isActive = activeCategory === category.name || activeCategory === category.slug
-              return (
-                <Link
-                  key={category.slug || category._id}
-                  href={`/products?category=${category.name}`}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all whitespace-nowrap group ${
-                    isActive
-                      ? 'text-premium-gold bg-gradient-to-r from-premium-gold/10 to-premium-amber/10'
-                      : 'text-ocean-darkGray hover:text-premium-gold hover:bg-gradient-to-r hover:from-premium-gold/5 hover:to-premium-amber/5'
-                  }`}
-                >
-                  <Icon size={16} className="group-hover:text-premium-gold transition-colors" />
-                  <span className="font-medium">{category.displayName}</span>
-                </Link>
-              )
-            })}
+            {categoriesLoading ? (
+              <span className="text-xs text-ocean-gray">Loading categories…</span>
+            ) : categoryError ? (
+              <span className="text-xs text-red-500">{categoryError}</span>
+            ) : categories.length === 0 ? (
+              <Link
+                href="/admin/categories"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-premium-gold/40 text-premium-gold/80 hover:text-premium-gold hover:border-premium-gold/60 transition"
+              >
+                <Sparkles size={16} />
+                <span className="font-medium">Add categories in admin</span>
+              </Link>
+            ) : (
+              categories.map((category) => {
+                const Icon = getIcon(category.icon)
+                const isActive = activeCategory === category.name || activeCategory === category.slug
+                return (
+                  <Link
+                    key={category.slug || category._id || category.name}
+                    href={`/products?category=${encodeURIComponent(category.name)}`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all whitespace-nowrap group ${
+                      isActive
+                        ? 'text-premium-gold bg-gradient-to-r from-premium-gold/10 to-premium-amber/10'
+                        : 'text-ocean-darkGray hover:text-premium-gold hover:bg-gradient-to-r hover:from-premium-gold/5 hover:to-premium-amber/5'
+                    }`}
+                  >
+                    <Icon size={16} className="group-hover:text-premium-gold transition-colors" />
+                    <span className="font-medium">{category.displayName || category.name}</span>
+                  </Link>
+                )
+              })
+            )}
           </div>
         </nav>
 
@@ -443,26 +469,41 @@ export default function WorldClassHeader() {
             <Grid size={18} className="sm:w-5 sm:h-5 group-hover:text-premium-gold transition-colors" />
             <span className="font-medium text-[10px] sm:text-xs text-center">All</span>
           </Link>
-          {categories.map((category) => {
-            const Icon = iconMap[category.icon] || Grid
-            const isActive = activeCategory === category.name || activeCategory === category.slug
-            return (
-              <Link
-                key={category.slug || category._id}
-                href={`/products?category=${category.name}`}
-                className={`flex flex-col items-center gap-1 px-2 sm:px-3 py-2 rounded-lg transition-all whitespace-nowrap group min-w-[60px] sm:min-w-[70px] ${
-                  isActive
-                    ? 'text-premium-gold bg-gradient-to-r from-premium-gold/10 to-premium-amber/10'
-                    : 'text-ocean-darkGray hover:text-premium-gold'
-                }`}
-              >
-                <Icon size={18} className="sm:w-5 sm:h-5 group-hover:text-premium-gold transition-colors" />
-                <span className="font-medium text-[10px] sm:text-xs text-center">{category.displayName}</span>
-              </Link>
-            )
-          })}
+          {categoriesLoading ? (
+            <span className="px-2 text-[10px] text-ocean-gray">Loading…</span>
+          ) : categoryError ? (
+            <span className="px-2 text-[10px] text-red-500">{categoryError}</span>
+          ) : categories.length === 0 ? (
+            <Link
+              href="/admin/categories"
+              className="flex flex-col items-center gap-1 px-2 sm:px-3 py-2 rounded-lg border border-dashed border-premium-gold/40 text-premium-gold/80 whitespace-nowrap"
+            >
+              <Sparkles size={18} className="sm:w-5 sm:h-5" />
+              <span className="font-medium text-[10px] sm:text-xs text-center">Add categories</span>
+            </Link>
+          ) : (
+            categories.map((category) => {
+              const Icon = getIcon(category.icon)
+              const isActive = activeCategory === category.name || activeCategory === category.slug
+              return (
+                <Link
+                  key={category.slug || category._id || category.name}
+                  href={`/products?category=${encodeURIComponent(category.name)}`}
+                  className={`flex flex-col items-center gap-1 px-2 sm:px-3 py-2 rounded-lg transition-all whitespace-nowrap group min-w-[60px] sm:min-w-[70px] ${
+                    isActive
+                      ? 'text-premium-gold bg-gradient-to-r from-premium-gold/10 to-premium-amber/10'
+                      : 'text-ocean-darkGray hover:text-premium-gold'
+                  }`}
+                >
+                  <Icon size={18} className="sm:w-5 sm:h-5 group-hover:text-premium-gold transition-colors" />
+                  <span className="font-medium text-[10px] sm:text-xs text-center">{category.displayName || category.name}</span>
+                </Link>
+              )
+            })
+          )}
         </nav>
       </div>
     </header>
   )
 }
+

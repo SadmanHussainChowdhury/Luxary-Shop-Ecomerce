@@ -4,14 +4,36 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Plus, Search, Edit, Trash2, Package, DollarSign, PackageCheck, X, Image as ImageIcon } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Package, DollarSign, PackageCheck, X, Image as ImageIcon, Upload, RefreshCw } from 'lucide-react'
+
+const DEFAULT_SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80&auto=format&fit=crop'
+
+async function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = (err) => reject(err)
+    reader.readAsDataURL(file)
+  })
+}
 
 export default function AdminProductsPage() {
   const [items, setItems] = useState<any[]>([])
   const [filteredItems, setFilteredItems] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [form, setForm] = useState({ title: '', slug: '', price: 0, countInStock: 0, image: '', description: '', category: '', brand: '', isFeatured: false })
+  const [form, setForm] = useState({
+    title: '',
+    slug: '',
+    price: 0,
+    countInStock: 0,
+    image: '',
+    description: '',
+    category: '',
+    brand: '',
+    isFeatured: false,
+    imageFile: null as File | null,
+  })
   const [message, setMessage] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -82,36 +104,77 @@ export default function AdminProductsPage() {
     e.preventDefault()
     setMessage(null)
     setLoading(true)
-    
+ 
     // Validate required fields
-    if (!form.title || !form.slug || !form.price || form.price <= 0) {
-      setMessage('Please fill in all required fields with valid values')
+    const trimmedTitle = form.title.trim()
+    if (!trimmedTitle) {
+      setMessage('Title is required')
       setLoading(false)
-      toast.error('Please fill in all required fields')
+      toast.error('Title is required')
       return
     }
 
+    const initialSlug = (form.slug || trimmedTitle)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+    if (!initialSlug) {
+      setMessage('Slug is required')
+      setLoading(false)
+      toast.error('Slug is required')
+      return
+    }
+
+    if (!form.price || Number(form.price) <= 0) {
+      setMessage('Price must be greater than zero')
+      setLoading(false)
+      toast.error('Price must be greater than zero')
+      return
+    }
+ 
     try {
-      const res = await fetch('/api/admin/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          ...form, 
-          images: form.image ? [{ url: form.image }] : [],
-          rating: 0,
-          numReviews: 0,
-        }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setMessage(data.error || 'Failed to create product')
+      const { imageFile, ...payload } = form
+      const imageUrl = payload.image || DEFAULT_SAMPLE_IMAGE
+
+      async function submitProduct(slug: string) {
+        const res = await fetch('/api/admin/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...payload,
+            slug,
+            images: imageUrl ? [{ url: imageUrl }] : [],
+            price: Number(payload.price),
+            countInStock: Number(payload.countInStock) || 0,
+            rating: 0,
+            numReviews: 0,
+          }),
+        })
+        const data = await res.json().catch(() => ({}))
+        return { res, data }
+      }
+
+      let slugToUse = initialSlug
+      let attempt = await submitProduct(slugToUse)
+      if (attempt.res.status === 409) {
+        const uniqueSlug = `${slugToUse}-${Date.now().toString(36)}`
+        attempt = await submitProduct(uniqueSlug)
+        if (attempt.res.ok) {
+          slugToUse = uniqueSlug
+        }
+      }
+
+      if (!attempt.res.ok) {
+        const errorMessage = attempt.data?.error || 'Failed to create product'
+        setMessage(errorMessage)
+        toast.error(errorMessage)
         setLoading(false)
-        toast.error(data.error || 'Failed to create product')
         return
       }
+
       setMessage(`Product "${form.title}" created successfully! It will now appear in the product section.`)
       toast.success(`Product "${form.title}" created successfully!`)
-      setForm({ title: '', slug: '', price: 0, countInStock: 0, image: '', description: '', category: '', brand: '', isFeatured: false })
+      setForm({ title: '', slug: '', price: 0, countInStock: 0, image: '', description: '', category: '', brand: '', isFeatured: false, imageFile: null })
       setShowForm(false)
       setLoading(false)
       // Reload products list
@@ -335,16 +398,36 @@ export default function AdminProductsPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-semibold text-ocean-darkGray mb-2">Image URL *</label>
-                <div className="relative">
-                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-ocean-gray" size={20} />
-                  <input
-                    value={form.image}
-                    onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
-                    required
-                    placeholder="https://example.com/image.jpg"
-                    className="w-full pl-10 pr-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold focus:ring-2 focus:ring-premium-gold/20 transition"
-                  />
+                <label className="block text-sm font-semibold text-ocean-darkGray mb-2">Image</label>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={form.image}
+                      onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
+                      placeholder="Enter image URL or upload a file"
+                      className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold focus:ring-2 focus:ring-premium-gold/20 transition"
+                    />
+                    <p className="text-xs text-ocean-gray mt-1">Enter a valid image URL or upload a file.</p>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <label htmlFor="imageFile" className="flex items-center gap-2 bg-ocean-blue text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-ocean-deep transition">
+                      <Upload size={20} />
+                      Upload File
+                      <input
+                        type="file"
+                        id="imageFile"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            fileToDataUrl(file).then(url => setForm(prev => ({ ...prev, image: url, imageFile: file })))
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
                 </div>
                 {form.image && (
                   <div className="mt-2">
@@ -354,12 +437,27 @@ export default function AdminProductsPage() {
                       alt="Preview" 
                       className="h-32 w-32 rounded-lg object-cover border border-ocean-border"
                       onError={(e) => {
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80&auto=format&fit=crop'
+                        e.currentTarget.src = DEFAULT_SAMPLE_IMAGE
                       }}
                     />
                   </div>
                 )}
-                <p className="text-xs text-ocean-gray mt-1">Enter a valid image URL. Product needs an image to display properly.</p>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setForm((prev) => ({ ...prev, image: DEFAULT_SAMPLE_IMAGE, imageFile: null }))}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 border border-ocean-border rounded-lg hover:bg-ocean-lightest"
+                  >
+                    <RefreshCw size={14} /> Use Sample
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm((prev) => ({ ...prev, image: '', imageFile: null }))}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 border border-red-200 text-red-600 rounded-lg hover:bg-red-50"
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-ocean-darkGray mb-2">Description</label>
@@ -411,7 +509,7 @@ export default function AdminProductsPage() {
                 <div className="flex items-center gap-4 flex-1">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={p.images?.[0]?.url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80&auto=format&fit=crop'}
+                    src={p.images?.[0]?.url || DEFAULT_SAMPLE_IMAGE}
                     alt={p.title}
                     className="h-20 w-20 rounded-xl object-cover border border-ocean-border"
                   />
@@ -439,7 +537,7 @@ export default function AdminProductsPage() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <div className="font-bold text-xl text-premium-gold">${p.price}</div>
+                    <div className="font-bold text-xl text-premium-gold">${Number(p.price || 0).toFixed(2)}</div>
                     <div className="flex items-center gap-2 text-sm text-ocean-gray mt-1">
                       <PackageCheck size={14} />
                       <span>{p.countInStock} in stock</span>

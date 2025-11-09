@@ -3,6 +3,9 @@ import { connectToDatabase } from '@/lib/mongoose'
 import { HeroContent } from '@/models/HeroContent'
 import { requireAdmin } from '@/lib/auth-server'
 
+const DEFAULT_HERO_IMAGE =
+  'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=2400&q=80'
+
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
     await requireAdmin()

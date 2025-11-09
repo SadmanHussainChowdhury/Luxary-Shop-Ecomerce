@@ -7,6 +7,18 @@ import { Plus, Edit, Trash2, X, Eye, EyeOff, Save, FileText, Sparkles, MessageSq
 
 type Tab = 'hero' | 'features' | 'testimonials' | 'flash-sale'
 
+const DEFAULT_HERO_IMAGE =
+  'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=2400&q=80'
+
+async function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = (err) => reject(err)
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function AdminContentPage() {
   const [activeTab, setActiveTab] = useState<Tab>('hero')
   const [loading, setLoading] = useState(true)
@@ -27,6 +39,8 @@ export default function AdminContentPage() {
     badgeText: '',
     isActive: true,
     order: 0,
+    backgroundImage: DEFAULT_HERO_IMAGE,
+    backgroundImageFile: null as File | null,
   })
 
   // Features state
@@ -99,10 +113,11 @@ export default function AdminContentPage() {
     try {
       const url = editingId ? `/api/admin/hero/${editingId}` : '/api/admin/hero'
       const method = editingId ? 'PUT' : 'POST'
+      const { backgroundImageFile, ...payload } = heroForm
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(heroForm),
+        body: JSON.stringify(payload),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -223,6 +238,8 @@ export default function AdminContentPage() {
         badgeText: item.badgeText || '',
         isActive: item.isActive !== undefined ? item.isActive : true,
         order: item.order || 0,
+        backgroundImage: item.backgroundImage || DEFAULT_HERO_IMAGE,
+        backgroundImageFile: null,
       })
     } else if (activeTab === 'features') {
       setFeatureForm({
@@ -259,7 +276,7 @@ export default function AdminContentPage() {
   function resetForm() {
     setEditingId(null)
     setShowForm(false)
-    setHeroForm({ title: '', subtitle: '', description: '', primaryButtonText: '', primaryButtonLink: '', secondaryButtonText: '', secondaryButtonLink: '', stats: [{ label: '', value: '' }], badgeText: '', isActive: true, order: 0 })
+    setHeroForm({ title: '', subtitle: '', description: '', primaryButtonText: '', primaryButtonLink: '', secondaryButtonText: '', secondaryButtonLink: '', stats: [{ label: '', value: '' }], badgeText: '', isActive: true, order: 0, backgroundImage: DEFAULT_HERO_IMAGE, backgroundImageFile: null })
     setFeatureForm({ title: '', description: '', icon: '', color: 'from-premium-gold to-premium-amber', href: '', isActive: true, order: 0 })
     setTestimonialForm({ name: '', role: '', image: '', text: '', rating: 5, isActive: true, order: 0 })
     setFlashSaleForm({ title: 'FLASH SALE', buttonText: 'Shop Now →', buttonLink: '/products?tag=flash', endDate: '', isActive: true })
@@ -411,20 +428,67 @@ export default function AdminContentPage() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">
-                    Stats (JSON format: {'[{ "label": "Happy Customers", "value": "1M+" }]'})
-                  </label>
-                  <textarea
-                    value={JSON.stringify(heroForm.stats, null, 2)}
-                    onChange={(e) => {
-                      try {
-                        setHeroForm({ ...heroForm, stats: JSON.parse(e.target.value) })
-                      } catch {}
-                    }}
-                    rows={4}
-                    className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg font-mono text-sm"
+                  <label className="block text-sm font-medium mb-2">Background Image URL (4K)</label>
+                  <input
+                    type="url"
+                    value={heroForm.backgroundImage}
+                    onChange={(e) => setHeroForm({ ...heroForm, backgroundImage: e.target.value, backgroundImageFile: null })}
+                    className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg"
+                    placeholder="https://images.unsplash.com/..."
                   />
+                  <p className="text-xs text-ocean-gray mt-1">
+                    Use a high-resolution 4K image (2400px or wider) or upload a file below.
+                  </p>
                 </div>
+                <div className="md:col-span-2 flex items-center gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Upload Background</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) {
+                          setHeroForm({ ...heroForm, backgroundImageFile: null })
+                          return
+                        }
+                        try {
+                          const dataUrl = await fileToDataUrl(file)
+                          setHeroForm({
+                            ...heroForm,
+                            backgroundImage: dataUrl,
+                            backgroundImageFile: file,
+                          })
+                          toast.success('Background image ready to save')
+                        } catch (error) {
+                          console.error('Failed to read file:', error)
+                          toast.error('Failed to read image file')
+                        }
+                      }}
+                      className="block text-sm"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setHeroForm({ ...heroForm, backgroundImage: DEFAULT_HERO_IMAGE, backgroundImageFile: null })}
+                    className="px-4 py-2 border border-ocean-border rounded-lg text-sm hover:bg-ocean-lightest"
+                  >
+                    Reset to default
+                  </button>
+                </div>
+                {heroForm.backgroundImage && (
+                  <div className="md:col-span-2">
+                    <div className="text-sm font-medium mb-2">Preview</div>
+                    <div className="relative w-full h-48 rounded-xl overflow-hidden border border-ocean-border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={heroForm.backgroundImage}
+                        alt="Hero background preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="md:col-span-2 flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -676,10 +740,16 @@ export default function AdminContentPage() {
                 <p className="text-center text-ocean-gray py-8">No hero content yet. Click "Add New" to create one.</p>
               ) : (
                 heroes.map((hero) => (
-                  <div key={hero._id} className="flex items-center justify-between p-4 border border-ocean-border rounded-lg">
-                    <div>
-                      <div className="font-semibold text-ocean-darkGray">{hero.title} / {hero.subtitle}</div>
-                      <div className="text-sm text-ocean-gray">{hero.description?.substring(0, 50)}...</div>
+                  <div key={hero._id} className="flex items-center justify-between gap-4 p-4 border border-ocean-border rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-12 rounded-lg overflow-hidden border border-ocean-border/60 bg-ocean-lightest">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={hero.backgroundImage || DEFAULT_HERO_IMAGE} alt={hero.title} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-ocean-darkGray">{hero.title} / {hero.subtitle}</div>
+                        <div className="text-sm text-ocean-gray">{hero.description?.substring(0, 50)}...</div>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {hero.isActive ? (
@@ -773,7 +843,18 @@ export default function AdminContentPage() {
                     <div>
                       <div className="font-semibold text-ocean-darkGray">{flashSale.title}</div>
                       <div className="text-sm text-ocean-gray">
-                        Ends: {new Date(flashSale.endDate).toLocaleString()}
+                        Ends: {new Date(flashSale.endDate).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                        <span className="mx-1">•</span>
+                        <span>
+                          {new Date(flashSale.endDate).toLocaleTimeString(undefined, {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

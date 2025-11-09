@@ -6,6 +6,9 @@ import Link from 'next/link'
 import PremiumButton from './PremiumButton'
 import { useState, useEffect } from 'react'
 
+const DEFAULT_HERO_IMAGE =
+  'https://images.unsplash.com/photo-1526481280695-3c46967acf66?auto=format&fit=crop&w=2400&q=80'
+
 export default function HeroSection() {
   const [hero, setHero] = useState<any>(null)
 
@@ -39,40 +42,22 @@ export default function HeroSection() {
       { label: 'Average Rating', value: '4.9★' },
     ],
     badgeText: "World's #1 Premium Ecommerce",
+    backgroundImage: DEFAULT_HERO_IMAGE,
   }
+
+  const backgroundImage = heroContent.backgroundImage || DEFAULT_HERO_IMAGE
 
   if (!heroContent) return null
   return (
-    <section className="relative min-h-[460px] sm:min-h-[520px] md:min-h-[600px] flex items-center overflow-hidden bg-gradient-to-br from-premium-darkBlue via-premium-royalBlue to-premium-electricBlue">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute top-20 left-10 w-72 h-72 bg-premium-gold/20 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-premium-amber/20 rounded-full blur-3xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            x: [0, -30, 0],
-            y: [0, -50, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      </div>
+    <section className="relative min-h-[460px] sm:min-h-[520px] md:min-h-[600px] flex items-center overflow-hidden bg-blue-950">
+      <div
+        className="absolute inset-0 bg-center bg-cover"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+        aria-hidden="true"
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-950/90 via-blue-900/65 to-blue-950/90" />
+      <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at top left, rgba(59, 130, 246, 0.25), transparent 60%)' }} />
+      <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at bottom right, rgba(96, 165, 250, 0.2), transparent 55%)' }} />
 
       <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 relative z-10">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">

@@ -100,7 +100,18 @@ export default function AdminOrderDetailPage() {
           </h1>
           <p className="text-ocean-gray flex items-center gap-2">
             <Calendar size={16} />
-            {new Date(order.createdAt || Date.now()).toLocaleString()}
+            {new Date(order.createdAt || Date.now()).toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+            <br />
+            <span className="text-xs text-ocean-gray">
+              {new Date(order.createdAt || Date.now()).toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
           </p>
         </div>
         <span

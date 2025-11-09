@@ -5,7 +5,6 @@ import ClientProviders from '@/components/ClientProviders'
 import PageTransition from '@/components/PageTransition'
 import RouteProgress from '@/components/RouteProgress'
 import WorldClassHeader from '@/components/AliExpressHeader'
-import PremiumBackground from '@/components/PremiumBackground'
 import ProductComparison from '@/components/ProductComparison'
 import PremiumFooter from '@/components/PremiumFooter'
 
@@ -22,16 +21,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body>
         <ClientProviders>
-        <PremiumBackground />
-        <ProductComparison />
-        <div className="min-h-screen flex flex-col relative z-0">
-          <RouteProgress />
-          <WorldClassHeader />
-          <main className="flex-1">
-            <PageTransition>{children}</PageTransition>
-          </main>
-          <PremiumFooter />
-        </div>
+          <ProductComparison />
+          <div className="min-h-screen flex flex-col relative z-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+            <RouteProgress />
+            <WorldClassHeader />
+            <main className="flex-1">
+              <PageTransition>{children}</PageTransition>
+            </main>
+            <PremiumFooter />
+          </div>
         </ClientProviders>
       </body>
     </html>
