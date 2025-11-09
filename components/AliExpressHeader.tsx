@@ -130,7 +130,7 @@ export default function WorldClassHeader() {
               </div>
             )}
           </div>
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
+          <div className="hidden sm:flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
             <Link 
               href="/register" 
               className="px-3 py-1 bg-gradient-to-r from-premium-gold/20 to-premium-amber/20 hover:from-premium-gold/30 hover:to-premium-amber/30 rounded-lg font-semibold text-premium-gold transition-all border border-premium-gold/30 w-full sm:w-auto text-center"
@@ -170,7 +170,11 @@ export default function WorldClassHeader() {
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 group relative flex-shrink-0">
+          <Link
+            href="/"
+            className="flex items-center gap-2 sm:gap-3 group relative flex-shrink-0"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             {/* Sparkle decorations */}
             <motion.div
               className="absolute -left-2 -top-2"
@@ -326,13 +330,19 @@ export default function WorldClassHeader() {
             </form>
           </div>
 
-          <div className="hidden sm:flex items-center gap-3 sm:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0 ml-auto">
             {isAdmin && (
-              <Link href="/admin" className="text-ocean-blue hover:text-ocean-deep text-xs sm:text-sm font-medium whitespace-nowrap">
+              <Link
+                href="/admin"
+                className="hidden sm:block text-ocean-blue hover:text-ocean-deep text-sm font-medium whitespace-nowrap"
+              >
                 Admin
               </Link>
             )}
-            <Link href="/account" className="text-ocean-darkGray hover:text-ocean-blue text-xs sm:text-sm whitespace-nowrap">
+            <Link
+              href="/account"
+              className="hidden sm:block text-ocean-darkGray hover:text-ocean-blue text-sm whitespace-nowrap"
+            >
               Account
             </Link>
             <CartButton />
@@ -380,23 +390,55 @@ export default function WorldClassHeader() {
 
                 {/* Mobile Links */}
                 <div className="flex flex-col gap-3 pt-2">
-                  {isAdmin && (
-                    <Link 
-                      href="/admin" 
+                  <div className="grid gap-2">
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-ocean-blue hover:text-ocean-deep font-medium py-2"
+                      >
+                        Admin
+                      </Link>
+                    )}
+                    <Link
+                      href="/"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="text-ocean-blue hover:text-ocean-deep font-medium py-2"
+                      className="text-ocean-darkGray hover:text-ocean-blue py-2"
                     >
-                      Admin
+                      Home
                     </Link>
-                  )}
-                  <Link 
-                    href="/account" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="text-ocean-darkGray hover:text-ocean-blue py-2"
-                  >
-                    Account
-                  </Link>
-                  <div className="pt-2 border-t border-ocean-border">
+                    <Link
+                      href="/account"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-ocean-darkGray hover:text-ocean-blue py-2"
+                    >
+                      Account
+                    </Link>
+                    {promoEnabled && (
+                      <Link
+                        href={promoLink || '/products'}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-ocean-blue hover:text-ocean-deep py-2"
+                      >
+                        Shop Promo
+                      </Link>
+                    )}
+                    <Link
+                      href="/register"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-ocean-blue hover:text-ocean-deep py-2"
+                    >
+                      Sign Up & Save $10
+                    </Link>
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-ocean-darkGray hover:text-ocean-blue py-2"
+                    >
+                      Sign In
+                    </Link>
+                  </div>
+                  <div className="pt-3 border-t border-ocean-border">
                     <CartButton />
                   </div>
                 </div>

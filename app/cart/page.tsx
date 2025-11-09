@@ -77,20 +77,34 @@ export default function CartPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-3">
             <div className="md:col-span-2 space-y-4">
-              {items.map((i) => (
-                <div key={i.slug} className="bg-white border border-ocean-border rounded flex items-center gap-4 p-4">
+              {items.map((item, index) => (
+                <div key={item.slug} className="bg-white border border-ocean-border rounded flex items-center gap-4 p-4">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-ocean-border bg-ocean-lightest text-sm font-semibold text-ocean-gray">
+                    {index + 1}
+                  </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={i.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80&auto=format&fit=crop'} alt={i.title} className="h-24 w-24 rounded object-cover" />
+                  <img
+                    src={item.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80&auto=format&fit=crop'}
+                    alt={item.title}
+                    className="h-24 w-24 rounded object-cover"
+                  />
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="font-medium text-ocean-darkGray">{i.title}</div>
-                      <div className="font-bold text-ocean-red">${(i.price * i.quantity).toFixed(2)}</div>
+                      <div className="font-medium text-ocean-darkGray">{item.title}</div>
+                      <div className="font-bold text-ocean-red">${(item.price * item.quantity).toFixed(2)}</div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <input type="number" min={1} max={99} value={i.quantity}
-                        onChange={(e) => updateQuantity(i.slug, Number(e.target.value))}
-                        className="w-20 rounded border border-ocean-border px-3 py-2 text-sm" />
-                      <button onClick={() => removeItem(i.slug)} className="text-ocean-red hover:underline text-sm">Remove</button>
+                      <input
+                        type="number"
+                        min={1}
+                        max={99}
+                        value={item.quantity}
+                        onChange={(e) => updateQuantity(item.slug, Number(e.target.value))}
+                        className="w-20 rounded border border-ocean-border px-3 py-2 text-sm"
+                      />
+                      <button onClick={() => removeItem(item.slug)} className="text-ocean-red hover:underline text-sm">
+                        Remove
+                      </button>
                     </div>
                   </div>
                 </div>
