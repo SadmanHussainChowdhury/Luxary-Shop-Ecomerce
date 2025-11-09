@@ -19,7 +19,8 @@ function getIcon(iconName?: string) {
   if (!iconName) {
     return Icons.Grid
   }
-  const IconComponent = (Icons as Record<string, React.ComponentType<LucideProps>>)[iconName]
+  const iconMap = Icons as unknown as Record<string, React.ComponentType<LucideProps>>
+  const IconComponent = iconMap[iconName]
   return IconComponent || Icons.Grid
 }
 
