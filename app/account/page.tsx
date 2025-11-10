@@ -83,20 +83,42 @@ export default function AccountPage() {
   const [profile, setProfile] = useState(DEFAULT_PROFILE)
   const [signedIn, setSignedIn] = useState<boolean | null>(null)
   const [activities, setActivities] = useState<any[]>([])
-  const [activityStats, setActivityStats] = useState<any>(null)
+  const [activityStats, setActivityStats] = useState<any>({
+    productViews: 0,
+    cartAdds: 0,
+    total: 0,
+    signIns: 0,
+    orders: 0,
+    searches: 0,
+  })
+
+  function refreshAccountData() {
+    if (typeof window === 'undefined') return
+    const profile = loadProfile()
+    const orders = loadOrders()
+    const activities = getActivities(20)
+    const stats = getActivityStats()
+    
+    setProfile(profile)
+    setOrders(orders)
+    setActivities(activities)
+    setActivityStats(stats)
+  }
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const flag = localStorage.getItem(AUTH_STORAGE_KEY) === 'true'
     setSignedIn(flag)
     if (flag) {
-      setProfile(loadProfile())
-      setOrders(loadOrders())
-      setActivities(getActivities(20))
-      setActivityStats(getActivityStats())
+      refreshAccountData()
       
       // Track page view
       trackActivity('page_view', { page: '/account' })
+      
+      // Refresh data after tracking (in case tracking added new activity)
+      setTimeout(() => {
+        refreshAccountData()
+      }, 100)
     }
   }, [])
 
@@ -111,8 +133,8 @@ export default function AccountPage() {
   function handleClearActivityCache() {
     if (typeof window === 'undefined') return
     clearActivities()
-    setActivities([])
-    setActivityStats(getActivityStats())
+    // Refresh all data after clearing
+    refreshAccountData()
     toast.success('Activity cache cleared')
   }
 
@@ -215,18 +237,18 @@ export default function AccountPage() {
                   </div>
                   <div className="text-sm text-ocean-gray">Open Orders</div>
                 </div>
-                {activityStats && (
-                  <>
-                    <div className="border border-ocean-border rounded p-4">
-                      <div className="text-2xl font-bold text-premium-gold mb-1">{activityStats.productViews}</div>
-                      <div className="text-sm text-ocean-gray">Product Views</div>
-                    </div>
-                    <div className="border border-ocean-border rounded p-4">
-                      <div className="text-2xl font-bold text-premium-gold mb-1">{activityStats.cartAdds}</div>
-                      <div className="text-sm text-ocean-gray">Cart Adds</div>
-                    </div>
-                  </>
-                )}
+                <div className="border border-ocean-border rounded p-4">
+                  <div className="text-2xl font-bold text-premium-gold mb-1">
+                    {activityStats?.productViews || 0}
+                  </div>
+                  <div className="text-sm text-ocean-gray">Product Views</div>
+                </div>
+                <div className="border border-ocean-border rounded p-4">
+                  <div className="text-2xl font-bold text-premium-gold mb-1">
+                    {activityStats?.cartAdds || 0}
+                  </div>
+                  <div className="text-sm text-ocean-gray">Cart Adds</div>
+                </div>
               </div>
 
               <div className="mb-6">
