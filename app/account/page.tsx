@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { User, ShoppingBag, Heart, Settings, LogOut } from 'lucide-react'
+import { User, ShoppingBag, Heart, Settings, LogOut, Activity } from 'lucide-react'
 import { toast } from 'sonner'
+import { getActivities, getActivityStats, trackActivity } from '@/lib/activity-tracker'
 
 const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
 const ORDERS_STORAGE_KEY = 'worldclass_orders_v1'
@@ -65,6 +66,8 @@ export default function AccountPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [profile, setProfile] = useState(DEFAULT_PROFILE)
   const [signedIn, setSignedIn] = useState<boolean | null>(null)
+  const [activities, setActivities] = useState<any[]>([])
+  const [activityStats, setActivityStats] = useState<any>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -73,11 +76,17 @@ export default function AccountPage() {
     if (flag) {
       setProfile(loadProfile())
       setOrders(loadOrders())
+      setActivities(getActivities(20))
+      setActivityStats(getActivityStats())
+      
+      // Track page view
+      trackActivity('page_view', { page: '/account' })
     }
   }, [])
 
   function handleSignOut() {
     if (typeof window === 'undefined') return
+    trackActivity('sign_out', { page: '/account' })
     localStorage.removeItem(AUTH_STORAGE_KEY)
     toast.success('Signed out')
     setSignedIn(false)
@@ -171,7 +180,7 @@ export default function AccountPage() {
             <div className="bg-white border border-ocean-border rounded p-6">
               <h2 className="text-xl font-bold text-ocean-darkGray mb-6">Account Overview</h2>
 
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="border border-ocean-border rounded p-4">
                   <div className="text-2xl font-bold text-ocean-blue mb-1">{orders.length}</div>
                   <div className="text-sm text-ocean-gray">Total Orders</div>
@@ -182,9 +191,21 @@ export default function AccountPage() {
                   </div>
                   <div className="text-sm text-ocean-gray">Open Orders</div>
                 </div>
+                {activityStats && (
+                  <>
+                    <div className="border border-ocean-border rounded p-4">
+                      <div className="text-2xl font-bold text-premium-gold mb-1">{activityStats.productViews}</div>
+                      <div className="text-sm text-ocean-gray">Product Views</div>
+                    </div>
+                    <div className="border border-ocean-border rounded p-4">
+                      <div className="text-2xl font-bold text-premium-gold mb-1">{activityStats.cartAdds}</div>
+                      <div className="text-sm text-ocean-gray">Cart Adds</div>
+                    </div>
+                  </>
+                )}
               </div>
 
-              <div>
+              <div className="mb-6">
                 <h3 className="font-semibold text-ocean-darkGray mb-4">Recent Orders</h3>
                 {orders.length === 0 ? (
                   <div className="text-ocean-gray py-8 text-center">
@@ -214,6 +235,68 @@ export default function AccountPage() {
                           <div className="text-xs text-ocean-gray capitalize">{order.status}</div>
                         </div>
                       </Link>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Activity Tracking Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Activity size={20} className="text-premium-gold" />
+                  <h3 className="font-semibold text-ocean-darkGray">Recent Activity</h3>
+                </div>
+                {activities.length === 0 ? (
+                  <div className="text-ocean-gray py-8 text-center text-sm">
+                    No activity tracked yet. Start browsing to see your activity history.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {activities.slice(0, 10).map((activity: any) => {
+                      const activityDate = new Date(activity.timestamp)
+                      const timeDisplay = activityDate.toLocaleString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                      
+                      const getActivityLabel = () => {
+                        switch (activity.type) {
+                          case 'sign_in':
+                            return 'Signed in'
+                          case 'sign_out':
+                            return 'Signed out'
+                          case 'product_view':
+                            return `Viewed product: ${activity.details?.productSlug || 'Unknown'}`
+                          case 'cart_add':
+                            return `Added to cart: ${activity.details?.productTitle || activity.details?.productSlug || 'Unknown'}`
+                          case 'wishlist_add':
+                            return `Added to wishlist: ${activity.details?.productSlug || 'Unknown'}`
+                          case 'wishlist_remove':
+                            return `Removed from wishlist: ${activity.details?.productSlug || 'Unknown'}`
+                          case 'search':
+                            return `Searched for: "${activity.details?.searchQuery || 'Unknown'}"`
+                          case 'order_placed':
+                            return `Placed order: #${activity.details?.orderId || 'Unknown'}`
+                          case 'page_view':
+                            return `Visited: ${activity.details?.page || 'Unknown'}`
+                          default:
+                            return activity.type.replace('_', ' ')
+                        }
+                      }
+                      
+                      return (
+                        <div
+                          key={activity.id}
+                          className="flex items-center justify-between p-3 border border-ocean-border rounded text-sm bg-ocean-lightest/50"
+                        >
+                          <div className="flex-1">
+                            <div className="text-ocean-darkGray font-medium">{getActivityLabel()}</div>
+                            <div className="text-xs text-ocean-gray">{timeDisplay}</div>
+                          </div>
+                        </div>
                       )
                     })}
                   </div>

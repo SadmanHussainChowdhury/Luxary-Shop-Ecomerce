@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
+import { trackActivity } from '@/lib/activity-tracker'
 
 const AUTH_STORAGE_KEY = 'worldclass_signed_in'
 const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
@@ -38,62 +39,72 @@ export default function LoginPage() {
     setError(null)
 
     const callbackUrl = searchParams.get('callbackUrl') || '/'
+    const normalizedEmail = email.trim().toLowerCase()
 
-    setTimeout(() => {
-      if (typeof window === 'undefined') {
+    try {
+      // Authenticate against MongoDB
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          password: password,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Invalid email or password')
+        toast.error(data.error || 'Login failed')
         setLoading(false)
         return
       }
 
-      const usersRaw = localStorage.getItem(USERS_STORAGE_KEY)
-      const users: Array<{ email: string; password: string; name?: string; role?: string }> = usersRaw ? JSON.parse(usersRaw) : []
-      const normalizedEmail = email.trim().toLowerCase()
-      const matchingUser = users.find((user) => user.email.toLowerCase() === normalizedEmail)
-
-      if (!matchingUser) {
-        setError('No account found with that email. Please register first.')
-        toast.error('Account not found. Please sign up.')
-        setLoading(false)
-        return
-      }
-
-      if (matchingUser.password !== password) {
-        setError('Incorrect password. Please try again.')
-        toast.error('Incorrect password. Please try again.')
-        setLoading(false)
-        return
-      }
-
-      const profileName = matchingUser.name || normalizedEmail.split('@')[0] || 'Valued Customer'
-      let existingProfileData: Record<string, any> = {}
-      const storedProfile = localStorage.getItem(PROFILE_STORAGE_KEY)
-      if (storedProfile) {
-        try {
-          const parsed = JSON.parse(storedProfile)
-          if (parsed?.email === normalizedEmail) {
-            existingProfileData = parsed
+      // Login successful - store user session locally
+      if (typeof window !== 'undefined') {
+        const profileName = data.name || normalizedEmail.split('@')[0] || 'Valued Customer'
+        let existingProfileData: Record<string, any> = {}
+        const storedProfile = localStorage.getItem(PROFILE_STORAGE_KEY)
+        if (storedProfile) {
+          try {
+            const parsed = JSON.parse(storedProfile)
+            if (parsed?.email === normalizedEmail) {
+              existingProfileData = parsed
+            }
+          } catch (error) {
+            existingProfileData = {}
           }
-        } catch (error) {
-          existingProfileData = {}
         }
+
+        const updatedProfile = {
+          ...existingProfileData,
+          name: profileName,
+          email: data.email || normalizedEmail,
+          phone: existingProfileData.phone || '',
+          newsletter: existingProfileData.newsletter ?? true,
+          smsAlerts: existingProfileData.smsAlerts ?? false,
+        }
+
+        localStorage.setItem(AUTH_STORAGE_KEY, 'true')
+        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfile))
+
+        // Track sign-in activity
+        trackActivity('sign_in', {
+          page: callbackUrl,
+          email: normalizedEmail,
+        })
       }
 
-      const updatedProfile = {
-        ...existingProfileData,
-        name: profileName,
-        email: normalizedEmail,
-        phone: existingProfileData.phone || '',
-        newsletter: existingProfileData.newsletter ?? true,
-        smsAlerts: existingProfileData.smsAlerts ?? false,
-      }
-
-      localStorage.setItem(AUTH_STORAGE_KEY, 'true')
-      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfile))
-
-      toast.success(`Welcome back, ${profileName.split(' ')[0]}!`)
+      toast.success(`Welcome back, ${data.name?.split(' ')[0] || 'Customer'}!`)
       setLoading(false)
       router.replace(callbackUrl)
-    }, 600)
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError('Login failed. Please try again.')
+      toast.error('Login failed. Please try again.')
+      setLoading(false)
+    }
   }
 
   return (

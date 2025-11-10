@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import { trackActivity } from '@/lib/activity-tracker'
 
 type Props = {
   slug: string
@@ -43,6 +44,13 @@ export default function AddToCartButton({ slug, title, price, image }: Props) {
     setAdding(false)
     toast.success(`${title} added to cart`, { duration: 1400 })
     try { window.dispatchEvent(new Event('cart:updated')) } catch {}
+    
+    // Track cart add activity
+    trackActivity('cart_add', {
+      productSlug: slug,
+      productTitle: title,
+      price: price,
+    })
   }
 
   return (

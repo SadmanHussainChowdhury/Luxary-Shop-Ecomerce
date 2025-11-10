@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import CartButton from './CartButton'
 import { toast } from 'sonner'
+import { trackActivity } from '@/lib/activity-tracker'
 
 type SiteSettings = {
   siteName?: string
@@ -376,6 +377,8 @@ export default function WorldClassHeader() {
                 e.preventDefault()
                 const query = search.trim()
                 if (query) {
+                  // Track search activity
+                  trackActivity('search', { searchQuery: query })
                   router.push(`/products?q=${encodeURIComponent(query)}`)
                 } else {
                   router.push('/products')
@@ -429,6 +432,8 @@ export default function WorldClassHeader() {
                     const query = search.trim()
                     setMobileMenuOpen(false)
                     if (query) {
+                      // Track search activity
+                      trackActivity('search', { searchQuery: query })
                       router.push(`/products?q=${encodeURIComponent(query)}`)
                     } else {
                       router.push('/products')

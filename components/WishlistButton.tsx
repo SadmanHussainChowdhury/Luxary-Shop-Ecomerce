@@ -4,6 +4,7 @@ import { Heart } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
+import { trackActivity } from '@/lib/activity-tracker'
 
 const STORAGE_KEY = 'worldclass_wishlist_v1'
 
@@ -38,10 +39,12 @@ export default function WishlistButton({ slug }: { slug: string }) {
       saveWishlist(items.filter((s) => s !== slug))
       setIsWishlisted(false)
       toast.success('Removed from wishlist')
+      trackActivity('wishlist_remove', { productSlug: slug })
     } else {
       saveWishlist([...items, slug])
       setIsWishlisted(true)
       toast.success('Added to wishlist')
+      trackActivity('wishlist_add', { productSlug: slug })
     }
   }
 

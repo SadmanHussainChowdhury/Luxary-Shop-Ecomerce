@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Sparkles, Check } from 'lucide-react'
 import { toast } from 'sonner'
+import { trackActivity } from '@/lib/activity-tracker'
 
 const AUTH_STORAGE_KEY = 'worldclass_signed_in'
 const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
@@ -56,48 +57,65 @@ export default function RegisterPage() {
 
     const normalizedEmail = email.trim().toLowerCase()
 
-    if (typeof window !== 'undefined') {
-      const usersRaw = localStorage.getItem(USERS_STORAGE_KEY)
-      const users: Array<{ name: string; email: string; password: string; role?: string }> = usersRaw ? JSON.parse(usersRaw) : []
-      const existing = users.find((user) => user.email.toLowerCase() === normalizedEmail)
-      if (existing) {
-        setError('An account with this email already exists. Please sign in instead.')
-        toast.error('Account already exists. Please sign in.')
+    try {
+      // Register user in MongoDB
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: normalizedEmail,
+          password: password,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          setError('An account with this email already exists. Please sign in instead.')
+          toast.error('Account already exists. Please sign in.')
+        } else {
+          setError(data.error || 'Registration failed. Please try again.')
+          toast.error(data.error || 'Registration failed')
+        }
         setLoading(false)
         return
       }
-    }
 
-    setTimeout(() => {
+      // Registration successful - store user session locally
       setSuccess(true)
       toast.success('Account created! Welcome aboard!')
 
       const callbackUrl = searchParams.get('callbackUrl') || '/'
-      setTimeout(() => {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(AUTH_STORAGE_KEY, 'true')
-          const profile = {
-            name,
-            email: normalizedEmail,
-            phone: '',
-            newsletter: true,
-            smsAlerts: false,
-          }
-          localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile))
-
-          const usersRaw = localStorage.getItem(USERS_STORAGE_KEY)
-          const users: Array<{ name: string; email: string; password: string; role?: string }> = usersRaw ? JSON.parse(usersRaw) : []
-          users.push({
-            name,
-            email: normalizedEmail,
-            password,
-            role: 'customer',
-          })
-          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users))
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(AUTH_STORAGE_KEY, 'true')
+        const profile = {
+          name: data.name || name,
+          email: data.email || normalizedEmail,
+          phone: '',
+          newsletter: true,
+          smsAlerts: false,
         }
+        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile))
+        
+        // Track sign-in activity after registration
+        trackActivity('sign_in', {
+          page: callbackUrl,
+          email: normalizedEmail,
+        })
+      }
+
+      setTimeout(() => {
         router.replace(callbackUrl)
       }, 1000)
-    }, 600)
+    } catch (err: any) {
+      console.error('Registration error:', err)
+      setError('Registration failed. Please try again.')
+      toast.error('Registration failed. Please try again.')
+      setLoading(false)
+    }
   }
 
   return (
