@@ -16,6 +16,8 @@ export default function ProductComparison() {
   }, [])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
     const handleUpdate = () => {
       loadComparison()
     }
@@ -28,32 +30,48 @@ export default function ProductComparison() {
   }, [])
 
   async function loadComparison() {
-    const slugs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-    if (slugs.length === 0) {
-      setProducts([])
-      return
-    }
+    if (typeof window === 'undefined') return
+    try {
+      const slugs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+      if (slugs.length === 0) {
+        setProducts([])
+        return
+      }
 
-    const promises = slugs.map((slug: string) =>
-      fetch(`/api/products/${slug}`)
-        .then((res) => res.json())
-        .catch(() => null)
-    )
-    const items = (await Promise.all(promises)).filter(Boolean)
-    setProducts(items.slice(0, 4)) // Max 4 products
+      const promises = slugs.map((slug: string) =>
+        fetch(`/api/products/${slug}`)
+          .then((res) => res.json())
+          .catch(() => null)
+      )
+      const items = (await Promise.all(promises)).filter(Boolean)
+      setProducts(items.slice(0, 4)) // Max 4 products
+    } catch (error) {
+      console.error('Failed to load comparison:', error)
+      setProducts([])
+    }
   }
 
   function removeProduct(slug: string) {
-    const slugs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-    const updated = slugs.filter((s: string) => s !== slug)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-    loadComparison()
+    if (typeof window === 'undefined') return
+    try {
+      const slugs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+      const updated = slugs.filter((s: string) => s !== slug)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+      loadComparison()
+    } catch (error) {
+      console.error('Failed to remove product from comparison:', error)
+    }
   }
 
   function clearAll() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([]))
-    setProducts([])
-    setIsOpen(false)
+    if (typeof window === 'undefined') return
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([]))
+      setProducts([])
+      setIsOpen(false)
+    } catch (error) {
+      console.error('Failed to clear comparison:', error)
+    }
   }
 
   if (products.length === 0) return null
@@ -167,11 +185,16 @@ export default function ProductComparison() {
 
 export function CompareButton({ slug }: { slug: string }) {
   function addToComparison() {
-    const slugs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-    if (!slugs.includes(slug) && slugs.length < 4) {
-      slugs.push(slug)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(slugs))
-      window.dispatchEvent(new Event('comparison:updated'))
+    if (typeof window === 'undefined') return
+    try {
+      const slugs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+      if (!slugs.includes(slug) && slugs.length < 4) {
+        slugs.push(slug)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(slugs))
+        window.dispatchEvent(new Event('comparison:updated'))
+      }
+    } catch (error) {
+      console.error('Failed to add to comparison:', error)
     }
   }
 

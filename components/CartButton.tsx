@@ -8,6 +8,7 @@ import Link from 'next/link'
 const STORAGE_KEY = 'up_premium_cart_v1'
 
 function loadCount(): number {
+  if (typeof window === 'undefined') return 0
   try { return (JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as any[]).reduce((s, i) => s + (i.quantity || 1), 0) } catch { return 0 }
 }
 
@@ -16,6 +17,7 @@ export default function CartButton() {
   const [bump, setBump] = useState(false)
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
     setCount(loadCount())
     const onStorage = (e: StorageEvent) => { if (e.key === STORAGE_KEY) { setCount(loadCount()); setBump(true); setTimeout(() => setBump(false), 300) } }
     const onUpdated = () => { setCount(loadCount()); setBump(true); setTimeout(() => setBump(false), 300) }

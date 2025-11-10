@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 
 const AUTH_STORAGE_KEY = 'worldclass_signed_in'
 const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
+const USERS_STORAGE_KEY = 'worldclass_users_v1'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -35,26 +36,64 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    
+
     const callbackUrl = searchParams.get('callbackUrl') || '/'
 
-    // Simulate a successful login without server authentication
     setTimeout(() => {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(AUTH_STORAGE_KEY, 'true')
-        const existingProfile = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY) || '{}')
-        const updatedProfile = {
-          name: existingProfile.name || email.split('@')[0] || 'Guest Shopper',
-          email,
-          phone: existingProfile.phone || '',
-          newsletter: existingProfile.newsletter ?? true,
-          smsAlerts: existingProfile.smsAlerts ?? false,
-        }
-        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfile))
+      if (typeof window === 'undefined') {
+        setLoading(false)
+        return
       }
-      toast.success('Welcome back! (Authentication disabled)')
+
+      const usersRaw = localStorage.getItem(USERS_STORAGE_KEY)
+      const users: Array<{ email: string; password: string; name?: string; role?: string }> = usersRaw ? JSON.parse(usersRaw) : []
+      const normalizedEmail = email.trim().toLowerCase()
+      const matchingUser = users.find((user) => user.email.toLowerCase() === normalizedEmail)
+
+      if (!matchingUser) {
+        setError('No account found with that email. Please register first.')
+        toast.error('Account not found. Please sign up.')
+        setLoading(false)
+        return
+      }
+
+      if (matchingUser.password !== password) {
+        setError('Incorrect password. Please try again.')
+        toast.error('Incorrect password. Please try again.')
+        setLoading(false)
+        return
+      }
+
+      const profileName = matchingUser.name || normalizedEmail.split('@')[0] || 'Valued Customer'
+      let existingProfileData: Record<string, any> = {}
+      const storedProfile = localStorage.getItem(PROFILE_STORAGE_KEY)
+      if (storedProfile) {
+        try {
+          const parsed = JSON.parse(storedProfile)
+          if (parsed?.email === normalizedEmail) {
+            existingProfileData = parsed
+          }
+        } catch (error) {
+          existingProfileData = {}
+        }
+      }
+
+      const updatedProfile = {
+        ...existingProfileData,
+        name: profileName,
+        email: normalizedEmail,
+        phone: existingProfileData.phone || '',
+        newsletter: existingProfileData.newsletter ?? true,
+        smsAlerts: existingProfileData.smsAlerts ?? false,
+      }
+
+      localStorage.setItem(AUTH_STORAGE_KEY, 'true')
+      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfile))
+
+      toast.success(`Welcome back, ${profileName.split(' ')[0]}!`)
+      setLoading(false)
       router.replace(callbackUrl)
-    }, 500)
+    }, 600)
   }
 
   return (

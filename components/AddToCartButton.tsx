@@ -14,11 +14,17 @@ type Props = {
 const STORAGE_KEY = 'up_premium_cart_v1'
 
 function loadCart(): any[] {
+  if (typeof window === 'undefined') return []
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') } catch { return [] }
 }
 
 function saveCart(items: any[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+  } catch (error) {
+    console.error('Failed to save cart:', error)
+  }
 }
 
 export default function AddToCartButton({ slug, title, price, image }: Props) {

@@ -13,18 +13,25 @@ export default function Newsletter() {
     e.preventDefault()
     if (!email) return
 
-    // Store in localStorage for demo
-    const subscribers = JSON.parse(localStorage.getItem('newsletter_subscribers') || '[]')
-    if (!subscribers.includes(email)) {
-      subscribers.push(email)
-      localStorage.setItem('newsletter_subscribers', JSON.stringify(subscribers))
-    }
+    if (typeof window === 'undefined') return
 
-    setSubscribed(true)
-    toast.success('Successfully subscribed to newsletter!')
-    setEmail('')
-    
-    setTimeout(() => setSubscribed(false), 3000)
+    try {
+      // Store in localStorage for demo
+      const subscribers = JSON.parse(localStorage.getItem('newsletter_subscribers') || '[]')
+      if (!subscribers.includes(email)) {
+        subscribers.push(email)
+        localStorage.setItem('newsletter_subscribers', JSON.stringify(subscribers))
+      }
+
+      setSubscribed(true)
+      toast.success('Successfully subscribed to newsletter!')
+      setEmail('')
+      
+      setTimeout(() => setSubscribed(false), 3000)
+    } catch (error) {
+      console.error('Failed to subscribe:', error)
+      toast.error('Failed to subscribe. Please try again.')
+    }
   }
 
   return (

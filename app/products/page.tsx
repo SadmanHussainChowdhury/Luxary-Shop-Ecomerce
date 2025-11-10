@@ -44,6 +44,7 @@ export default function ProductsPage() {
   }
 
   function handleSortChange(newSort: string) {
+    if (typeof window === 'undefined') return
     setSort(newSort)
     const url = new URL(window.location.href)
     url.searchParams.set('sort', newSort)

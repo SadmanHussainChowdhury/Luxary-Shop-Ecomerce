@@ -13,7 +13,12 @@ function loadCart(): CartItem[] {
 }
 
 function saveCart(items: CartItem[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+  } catch (error) {
+    console.error('Failed to save cart:', error)
+  }
 }
 
 export default function CartPage() {
@@ -54,7 +59,9 @@ export default function CartPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Checkout failed')
-      window.location.href = data.url
+      if (typeof window !== 'undefined' && data.url) {
+        window.location.href = data.url
+      }
     } catch (e: any) {
       setMessage(e.message || 'Checkout failed')
     } finally {

@@ -14,19 +14,25 @@ export default function RecentlyViewed() {
   }, [])
 
   async function loadRecentlyViewed() {
-    const slugs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').slice(0, 5)
-    if (slugs.length === 0) {
-      setItems([])
-      return
-    }
+    if (typeof window === 'undefined') return
+    try {
+      const slugs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').slice(0, 5)
+      if (slugs.length === 0) {
+        setItems([])
+        return
+      }
 
-    const promises = slugs.map((slug: string) =>
-      fetch(`/api/products/${slug}`)
-        .then((res) => res.json())
-        .catch(() => null)
-    )
-    const products = (await Promise.all(promises)).filter(Boolean)
-    setItems(products)
+      const promises = slugs.map((slug: string) =>
+        fetch(`/api/products/${slug}`)
+          .then((res) => res.json())
+          .catch(() => null)
+      )
+      const products = (await Promise.all(promises)).filter(Boolean)
+      setItems(products)
+    } catch (error) {
+      console.error('Failed to load recently viewed:', error)
+      setItems([])
+    }
   }
 
   if (items.length === 0) return null

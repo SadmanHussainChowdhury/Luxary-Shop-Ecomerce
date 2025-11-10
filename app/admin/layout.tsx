@@ -1,11 +1,11 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useSession, signOut } from 'next-auth/react'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Package, ShoppingCart, Home, Settings, BarChart3, Users, Bell, LogOut, Shield, Grid, FileText } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, Home, Settings, LogOut, Shield, Grid, FileText } from 'lucide-react'
+import { toast } from 'sonner'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,14 +16,71 @@ const navItems = [
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
+const ADMIN_STORAGE_KEY = 'worldclass_admin_signed_in'
+const ADMIN_PROFILE_KEY = 'worldclass_admin_profile_v1'
+const DEFAULT_ADMIN_NAME = 'Store Admin'
+
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const router = useRouter()
+  const [adminName, setAdminName] = useState(DEFAULT_ADMIN_NAME)
+  const [authState, setAuthState] = useState<'pending' | 'authorized' | 'denied'>('pending')
 
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' })
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    // Allow access to login page without auth check
+    if (pathname === '/admin/login') {
+      setAuthState('authorized')
+      return
+    }
+
+    const isSignedIn = localStorage.getItem(ADMIN_STORAGE_KEY) === 'true'
+    if (!isSignedIn) {
+      setAuthState('denied')
+      router.replace('/admin/login')
+      return
+    }
+
+    const profileRaw = localStorage.getItem(ADMIN_PROFILE_KEY)
+    if (profileRaw) {
+      try {
+        const profile = JSON.parse(profileRaw)
+        setAdminName(profile?.name || DEFAULT_ADMIN_NAME)
+      } catch (error) {
+        setAdminName(DEFAULT_ADMIN_NAME)
+      }
+    }
+
+    setAuthState('authorized')
+  }, [router, pathname])
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(ADMIN_STORAGE_KEY)
+      localStorage.removeItem(ADMIN_PROFILE_KEY)
+    }
+    toast.success('Signed out of admin panel')
+    router.replace('/admin/login')
   }
-  
+
+  if (authState === 'pending') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ocean-lightest">
+        <div className="text-ocean-gray text-sm">Verifying admin access…</div>
+      </div>
+    )
+  }
+
+  if (authState === 'denied') {
+    return null
+  }
+
+  // Don't show admin panel UI on login page
+  if (pathname === '/admin/login') {
+    return <>{children}</>
+  }
+
   return (
     <div className="relative min-h-screen bg-ocean-lightest">
       <div className="container mx-auto px-4 py-6">
@@ -48,7 +105,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </motion.div>
               </div>
               <p className="text-ocean-gray mt-1">
-                Welcome, {session?.user?.name || session?.user?.email || 'Guest'} • Manage your e-commerce store
+                Welcome, {adminName} • Manage your e-commerce store
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -59,17 +116,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 <Home size={18} />
                 Back to Store
               </Link>
-              {session?.user && (
-                <motion.button
-                  onClick={handleLogout}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium"
-                >
-                  <LogOut size={18} />
-                  Logout
-                </motion.button>
-              )}
+              <motion.button
+                onClick={handleLogout}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium"
+              >
+                <LogOut size={18} />
+                Logout
+              </motion.button>
             </div>
           </div>
           

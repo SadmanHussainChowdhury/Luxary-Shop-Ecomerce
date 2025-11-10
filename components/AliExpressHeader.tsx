@@ -3,12 +3,12 @@
 import { Search, Grid, Sparkles, Crown, Menu, X } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import CartButton from './CartButton'
+import { toast } from 'sonner'
 
 type SiteSettings = {
   siteName?: string
@@ -29,6 +29,9 @@ type CategorySummary = {
   color?: string
 }
 
+const CUSTOMER_AUTH_KEY = 'worldclass_signed_in'
+const CUSTOMER_PROFILE_KEY = 'worldclass_profile_v1'
+
 function getIcon(iconName?: string) {
   if (!iconName) {
     return Icons.Grid
@@ -46,11 +49,11 @@ export default function WorldClassHeader() {
   const [categoryError, setCategoryError] = useState<string | null>(null)
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null)
   const [settingsError, setSettingsError] = useState<string | null>(null)
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [customerName, setCustomerName] = useState('')
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { data: session } = useSession()
-  const isAdmin = (session?.user as any)?.role === 'admin'
   const activeCategory = searchParams.get('category') || ''
 
   const siteName = siteSettings?.siteName?.trim() || 'Luxury Shop'
@@ -60,6 +63,57 @@ export default function WorldClassHeader() {
   const promoText = promotionalBanner.text?.trim() || ''
   const promoLink = promotionalBanner.link?.trim() || '/products'
   const promoSegments = promoText ? promoText.split('•').map((segment) => segment.trim()).filter(Boolean) : []
+
+  const syncAuthState = useCallback(() => {
+    if (typeof window === 'undefined') return
+    const signedIn = localStorage.getItem(CUSTOMER_AUTH_KEY) === 'true'
+    setIsSignedIn(signedIn)
+
+    if (signedIn) {
+      const profileRaw = localStorage.getItem(CUSTOMER_PROFILE_KEY)
+      if (profileRaw) {
+        try {
+          const profile = JSON.parse(profileRaw)
+          const firstName = (profile?.name || '').split(' ')[0] || 'Customer'
+          setCustomerName(firstName)
+        } catch (error) {
+          setCustomerName('Customer')
+        }
+      } else {
+        setCustomerName('Customer')
+      }
+    } else {
+      setCustomerName('')
+    }
+  }, [])
+
+  const handleSignOut = useCallback(() => {
+    if (typeof window === 'undefined') return
+    localStorage.removeItem(CUSTOMER_AUTH_KEY)
+    toast.success('You have been signed out')
+    setIsSignedIn(false)
+    setCustomerName('')
+    setMobileMenuOpen(false)
+    router.push('/')
+  }, [router])
+
+  useEffect(() => {
+    syncAuthState()
+    const handleStorageChange = (event: StorageEvent) => {
+      if (
+        !event.key ||
+        event.key === CUSTOMER_AUTH_KEY ||
+        event.key === CUSTOMER_PROFILE_KEY
+      ) {
+        syncAuthState()
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+    }
+  }, [syncAuthState])
 
   useEffect(() => {
     async function loadCategories() {
@@ -131,18 +185,6 @@ export default function WorldClassHeader() {
             )}
           </div>
           <div className="hidden sm:flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
-            <Link 
-              href="/register" 
-              className="px-3 py-1 bg-gradient-to-r from-premium-gold/20 to-premium-amber/20 hover:from-premium-gold/30 hover:to-premium-amber/30 rounded-lg font-semibold text-premium-gold transition-all border border-premium-gold/30 w-full sm:w-auto text-center"
-            >
-              Sign Up & Save $10
-            </Link>
-            <Link 
-              href="/login" 
-              className="hover:text-premium-gold font-medium transition-colors text-center"
-            >
-              Sign In
-            </Link>
             {promoEnabled && promoLink && (
               <Link
                 href={promoLink}
@@ -150,6 +192,34 @@ export default function WorldClassHeader() {
               >
                 Shop Promo
               </Link>
+            )}
+            {isSignedIn ? (
+              <>
+                <span className="px-3 py-1 text-premium-gold font-semibold rounded-lg bg-premium-gold/10 border border-premium-gold/30">
+                  Welcome, {customerName}!
+                </span>
+                <button
+                  onClick={handleSignOut}
+                  className="px-3 py-1 bg-gradient-to-r from-premium-gold/20 to-premium-amber/20 hover:from-premium-gold/30 hover:to-premium-amber/30 rounded-lg font-semibold text-premium-gold transition-all border border-premium-gold/30"
+                >
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link 
+                  href="/register" 
+                  className="px-3 py-1 bg-gradient-to-r from-premium-gold/20 to-premium-amber/20 hover:from-premium-gold/30 hover:to-premium-amber/30 rounded-lg font-semibold text-premium-gold transition-all border border-premium-gold/30 w-full sm:w-auto text-center"
+                >
+                  Sign Up & Save $10
+                </Link>
+                <Link 
+                  href="/login" 
+                  className="hover:text-premium-gold font-medium transition-colors text-center"
+                >
+                  Sign In
+                </Link>
+              </>
             )}
           </div>
         </div>
@@ -331,14 +401,6 @@ export default function WorldClassHeader() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0 ml-auto">
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="hidden sm:block text-ocean-blue hover:text-ocean-deep text-sm font-medium whitespace-nowrap"
-              >
-                Admin
-              </Link>
-            )}
             <Link
               href="/account"
               className="hidden sm:block text-ocean-darkGray hover:text-ocean-blue text-sm whitespace-nowrap"
@@ -391,15 +453,6 @@ export default function WorldClassHeader() {
                 {/* Mobile Links */}
                 <div className="flex flex-col gap-3 pt-2">
                   <div className="grid gap-2">
-                    {isAdmin && (
-                      <Link
-                        href="/admin"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="text-ocean-blue hover:text-ocean-deep font-medium py-2"
-                      >
-                        Admin
-                      </Link>
-                    )}
                     <Link
                       href="/"
                       onClick={() => setMobileMenuOpen(false)}
@@ -423,20 +476,31 @@ export default function WorldClassHeader() {
                         Shop Promo
                       </Link>
                     )}
-                    <Link
-                      href="/register"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="text-ocean-blue hover:text-ocean-deep py-2"
-                    >
-                      Sign Up & Save $10
-                    </Link>
-                    <Link
-                      href="/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="text-ocean-darkGray hover:text-ocean-blue py-2"
-                    >
-                      Sign In
-                    </Link>
+                    {isSignedIn ? (
+                      <button
+                        onClick={handleSignOut}
+                        className="text-premium-gold hover:text-premium-amber py-2 text-left"
+                      >
+                        Log Out
+                      </button>
+                    ) : (
+                      <>
+                        <Link
+                          href="/register"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="text-ocean-blue hover:text-ocean-deep py-2"
+                        >
+                          Sign Up & Save $10
+                        </Link>
+                        <Link
+                          href="/login"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="text-ocean-darkGray hover:text-ocean-blue py-2"
+                        >
+                          Sign In
+                        </Link>
+                      </>
+                    )}
                   </div>
                   <div className="pt-3 border-t border-ocean-border">
                     <CartButton />

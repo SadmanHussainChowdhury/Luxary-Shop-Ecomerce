@@ -17,7 +17,12 @@ function loadWishlist(): string[] {
 }
 
 function saveWishlist(items: string[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+  } catch (error) {
+    console.error('Failed to save wishlist:', error)
+  }
 }
 
 export default function WishlistButton({ slug }: { slug: string }) {

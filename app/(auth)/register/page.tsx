@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 
 const AUTH_STORAGE_KEY = 'worldclass_signed_in'
 const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
+const USERS_STORAGE_KEY = 'worldclass_users_v1'
 
 export default function RegisterPage() {
   const [name, setName] = useState('')
@@ -53,9 +54,23 @@ export default function RegisterPage() {
       return
     }
 
+    const normalizedEmail = email.trim().toLowerCase()
+
+    if (typeof window !== 'undefined') {
+      const usersRaw = localStorage.getItem(USERS_STORAGE_KEY)
+      const users: Array<{ name: string; email: string; password: string; role?: string }> = usersRaw ? JSON.parse(usersRaw) : []
+      const existing = users.find((user) => user.email.toLowerCase() === normalizedEmail)
+      if (existing) {
+        setError('An account with this email already exists. Please sign in instead.')
+        toast.error('Account already exists. Please sign in.')
+        setLoading(false)
+        return
+      }
+    }
+
     setTimeout(() => {
       setSuccess(true)
-      toast.success('Account created! (Authentication disabled)')
+      toast.success('Account created! Welcome aboard!')
 
       const callbackUrl = searchParams.get('callbackUrl') || '/'
       setTimeout(() => {
@@ -63,12 +78,22 @@ export default function RegisterPage() {
           localStorage.setItem(AUTH_STORAGE_KEY, 'true')
           const profile = {
             name,
-            email,
+            email: normalizedEmail,
             phone: '',
             newsletter: true,
             smsAlerts: false,
           }
           localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile))
+
+          const usersRaw = localStorage.getItem(USERS_STORAGE_KEY)
+          const users: Array<{ name: string; email: string; password: string; role?: string }> = usersRaw ? JSON.parse(usersRaw) : []
+          users.push({
+            name,
+            email: normalizedEmail,
+            password,
+            role: 'customer',
+          })
+          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users))
         }
         router.replace(callbackUrl)
       }, 1000)
