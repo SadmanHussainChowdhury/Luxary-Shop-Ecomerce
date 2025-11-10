@@ -1,8 +1,23 @@
 // Customer Activity Tracker
 // Tracks customer activities when signed in
 
-const ACTIVITY_STORAGE_KEY = 'worldclass_customer_activity_v1'
+const ACTIVITY_STORAGE_KEY_PREFIX = 'worldclass_customer_activity_'
 const MAX_ACTIVITIES = 100 // Keep last 100 activities
+
+function getActivityStorageKey(): string {
+  if (typeof window === 'undefined') return ''
+  const profileRaw = localStorage.getItem('worldclass_profile_v1')
+  if (!profileRaw) return ''
+  try {
+    const profile = JSON.parse(profileRaw)
+    const email = profile?.email || ''
+    if (!email) return ''
+    // Create a user-specific key based on email
+    return `${ACTIVITY_STORAGE_KEY_PREFIX}${email.toLowerCase().replace(/[^a-z0-9]/g, '_')}`
+  } catch {
+    return ''
+  }
+}
 
 export type ActivityType = 
   | 'sign_in'
@@ -42,8 +57,11 @@ export function trackActivity(type: ActivityType, details?: Activity['details'])
   if (!isSignedIn()) return
 
   try {
+    const storageKey = getActivityStorageKey()
+    if (!storageKey) return
+
     const activities: Activity[] = JSON.parse(
-      localStorage.getItem(ACTIVITY_STORAGE_KEY) || '[]'
+      localStorage.getItem(storageKey) || '[]'
     )
 
     const newActivity: Activity = {
@@ -57,7 +75,7 @@ export function trackActivity(type: ActivityType, details?: Activity['details'])
     activities.unshift(newActivity)
     const trimmed = activities.slice(0, MAX_ACTIVITIES)
 
-    localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(trimmed))
+    localStorage.setItem(storageKey, JSON.stringify(trimmed))
   } catch (error) {
     console.error('Failed to track activity:', error)
   }
@@ -68,8 +86,11 @@ export function getActivities(limit?: number): Activity[] {
   if (!isSignedIn()) return []
 
   try {
+    const storageKey = getActivityStorageKey()
+    if (!storageKey) return []
+
     const activities: Activity[] = JSON.parse(
-      localStorage.getItem(ACTIVITY_STORAGE_KEY) || '[]'
+      localStorage.getItem(storageKey) || '[]'
     )
     return limit ? activities.slice(0, limit) : activities
   } catch (error) {
@@ -81,9 +102,27 @@ export function getActivities(limit?: number): Activity[] {
 export function clearActivities() {
   if (typeof window === 'undefined') return
   try {
-    localStorage.removeItem(ACTIVITY_STORAGE_KEY)
+    const storageKey = getActivityStorageKey()
+    if (storageKey) {
+      localStorage.removeItem(storageKey)
+    }
   } catch (error) {
     console.error('Failed to clear activities:', error)
+  }
+}
+
+export function clearAllUserActivities() {
+  if (typeof window === 'undefined') return
+  try {
+    // Clear all activity keys for all users
+    const keys = Object.keys(localStorage)
+    keys.forEach(key => {
+      if (key.startsWith(ACTIVITY_STORAGE_KEY_PREFIX)) {
+        localStorage.removeItem(key)
+      }
+    })
+  } catch (error) {
+    console.error('Failed to clear all activities:', error)
   }
 }
 

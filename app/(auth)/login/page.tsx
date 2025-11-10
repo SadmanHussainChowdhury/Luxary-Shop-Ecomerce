@@ -63,9 +63,31 @@ export default function LoginPage() {
 
       // Login successful - store user session locally
       if (typeof window !== 'undefined') {
+        // Check if switching users - clear previous user's data if different email
+        const storedProfile = localStorage.getItem(PROFILE_STORAGE_KEY)
+        let previousEmail = ''
+        if (storedProfile) {
+          try {
+            const parsed = JSON.parse(storedProfile)
+            previousEmail = parsed?.email || ''
+          } catch (error) {
+            // Ignore parse errors
+          }
+        }
+
+        // If switching to a different user, clear previous user's data
+        if (previousEmail && previousEmail.toLowerCase() !== normalizedEmail) {
+          // Clear previous user's activity cache
+          const prevActivityKey = `worldclass_customer_activity_${previousEmail.toLowerCase().replace(/[^a-z0-9]/g, '_')}`
+          localStorage.removeItem(prevActivityKey)
+          
+          // Clear previous user's orders
+          const prevOrdersKey = `worldclass_orders_${previousEmail.toLowerCase().replace(/[^a-z0-9]/g, '_')}`
+          localStorage.removeItem(prevOrdersKey)
+        }
+
         const profileName = data.name || normalizedEmail.split('@')[0] || 'Valued Customer'
         let existingProfileData: Record<string, any> = {}
-        const storedProfile = localStorage.getItem(PROFILE_STORAGE_KEY)
         if (storedProfile) {
           try {
             const parsed = JSON.parse(storedProfile)

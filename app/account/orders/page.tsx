@@ -7,7 +7,22 @@ import { ShoppingBag, Truck, RefreshCw, Package } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSearchParams } from 'next/navigation'
 
-const ORDERS_STORAGE_KEY = 'worldclass_orders_v1'
+const ORDERS_STORAGE_KEY_PREFIX = 'worldclass_orders_'
+const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
+
+function getOrdersStorageKey(): string {
+  if (typeof window === 'undefined') return ''
+  try {
+    const stored = localStorage.getItem(PROFILE_STORAGE_KEY)
+    if (!stored) return ''
+    const parsed = JSON.parse(stored)
+    const email = parsed?.email || ''
+    if (!email) return ''
+    return `${ORDERS_STORAGE_KEY_PREFIX}${email.toLowerCase().replace(/[^a-z0-9]/g, '_')}`
+  } catch {
+    return ''
+  }
+}
 
 const SAMPLE_ORDERS = [
   {
@@ -45,15 +60,17 @@ const SAMPLE_ORDERS = [
 ]
 
 function loadOrders() {
-  if (typeof window === 'undefined') return SAMPLE_ORDERS
+  if (typeof window === 'undefined') return []
   try {
-    const stored = localStorage.getItem(ORDERS_STORAGE_KEY)
-    if (!stored) return SAMPLE_ORDERS
+    const storageKey = getOrdersStorageKey()
+    if (!storageKey) return []
+    const stored = localStorage.getItem(storageKey)
+    if (!stored) return []
     const parsed = JSON.parse(stored)
     if (Array.isArray(parsed) && parsed.length > 0) return parsed
-    return SAMPLE_ORDERS
+    return []
   } catch {
-    return SAMPLE_ORDERS
+    return []
   }
 }
 
@@ -89,18 +106,24 @@ export default function AccountOrdersPage() {
 
   function resetOrders() {
     if (typeof window === 'undefined') return
-    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(SAMPLE_ORDERS))
-    setOrders(SAMPLE_ORDERS)
-    setExpanded(null)
-    toast.success('Demo orders restored')
+    const storageKey = getOrdersStorageKey()
+    if (storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(SAMPLE_ORDERS))
+      setOrders(SAMPLE_ORDERS)
+      setExpanded(null)
+      toast.success('Demo orders restored')
+    }
   }
 
   function clearOrders() {
     if (typeof window === 'undefined') return
-    localStorage.removeItem(ORDERS_STORAGE_KEY)
-    setOrders([])
-    setExpanded(null)
-    toast.success('Orders cleared')
+    const storageKey = getOrdersStorageKey()
+    if (storageKey) {
+      localStorage.removeItem(storageKey)
+      setOrders([])
+      setExpanded(null)
+      toast.success('Orders cleared')
+    }
   }
 
   if (signedIn === null) {

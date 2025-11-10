@@ -8,7 +8,21 @@ import Link from 'next/link'
 
 const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
 const WISHLIST_STORAGE_KEY = 'worldclass_wishlist_v1'
-const ORDERS_STORAGE_KEY = 'worldclass_orders_v1'
+const ORDERS_STORAGE_KEY_PREFIX = 'worldclass_orders_'
+
+function getOrdersStorageKey(): string {
+  if (typeof window === 'undefined') return ''
+  try {
+    const stored = localStorage.getItem(PROFILE_STORAGE_KEY)
+    if (!stored) return ''
+    const parsed = JSON.parse(stored)
+    const email = parsed?.email || ''
+    if (!email) return ''
+    return `${ORDERS_STORAGE_KEY_PREFIX}${email.toLowerCase().replace(/[^a-z0-9]/g, '_')}`
+  } catch {
+    return ''
+  }
+}
 
 const DEFAULT_PROFILE = {
   name: 'Guest Shopper',
@@ -60,7 +74,8 @@ export default function AccountSettingsPage() {
       setProfile(loadProfile())
       const wishlist = JSON.parse(localStorage.getItem(WISHLIST_STORAGE_KEY) || '[]')
       setWishlistCount(Array.isArray(wishlist) ? wishlist.length : 0)
-      const orders = JSON.parse(localStorage.getItem(ORDERS_STORAGE_KEY) || '[]')
+      const ordersKey = getOrdersStorageKey()
+      const orders = ordersKey ? JSON.parse(localStorage.getItem(ordersKey) || '[]') : []
       setOrdersCount(Array.isArray(orders) ? orders.length : 0)
     }
   }, [])
@@ -96,16 +111,22 @@ export default function AccountSettingsPage() {
 
   function restoreOrders() {
     if (typeof window === 'undefined') return
-    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(SAMPLE_ORDERS))
-    setOrdersCount(SAMPLE_ORDERS.length)
-    toast.success('Demo orders restored')
+    const ordersKey = getOrdersStorageKey()
+    if (ordersKey) {
+      localStorage.setItem(ordersKey, JSON.stringify(SAMPLE_ORDERS))
+      setOrdersCount(SAMPLE_ORDERS.length)
+      toast.success('Demo orders restored')
+    }
   }
 
   function clearOrders() {
     if (typeof window === 'undefined') return
-    localStorage.removeItem(ORDERS_STORAGE_KEY)
-    setOrdersCount(0)
-    toast.success('Orders cleared')
+    const ordersKey = getOrdersStorageKey()
+    if (ordersKey) {
+      localStorage.removeItem(ordersKey)
+      setOrdersCount(0)
+      toast.success('Orders cleared')
+    }
   }
 
   if (signedIn === null) {

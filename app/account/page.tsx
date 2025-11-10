@@ -2,12 +2,12 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { User, ShoppingBag, Heart, Settings, LogOut, Activity } from 'lucide-react'
+import { User, ShoppingBag, Heart, Settings, LogOut, Activity, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { getActivities, getActivityStats, trackActivity } from '@/lib/activity-tracker'
+import { getActivities, getActivityStats, trackActivity, clearActivities } from '@/lib/activity-tracker'
 
 const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
-const ORDERS_STORAGE_KEY = 'worldclass_orders_v1'
+const ORDERS_STORAGE_KEY_PREFIX = 'worldclass_orders_'
 const AUTH_STORAGE_KEY = 'worldclass_signed_in'
 
 const DEFAULT_PROFILE = {
@@ -49,16 +49,32 @@ function loadProfile() {
   }
 }
 
-function loadOrders() {
-  if (typeof window === 'undefined') return SAMPLE_ORDERS
+function getOrdersStorageKey(): string {
+  if (typeof window === 'undefined') return ''
   try {
-    const stored = localStorage.getItem(ORDERS_STORAGE_KEY)
-    if (!stored) return SAMPLE_ORDERS
+    const stored = localStorage.getItem(PROFILE_STORAGE_KEY)
+    if (!stored) return ''
+    const parsed = JSON.parse(stored)
+    const email = parsed?.email || ''
+    if (!email) return ''
+    return `${ORDERS_STORAGE_KEY_PREFIX}${email.toLowerCase().replace(/[^a-z0-9]/g, '_')}`
+  } catch {
+    return ''
+  }
+}
+
+function loadOrders() {
+  if (typeof window === 'undefined') return []
+  try {
+    const storageKey = getOrdersStorageKey()
+    if (!storageKey) return []
+    const stored = localStorage.getItem(storageKey)
+    if (!stored) return []
     const parsed = JSON.parse(stored)
     if (Array.isArray(parsed) && parsed.length > 0) return parsed
-    return SAMPLE_ORDERS
+    return []
   } catch {
-    return SAMPLE_ORDERS
+    return []
   }
 }
 
@@ -90,6 +106,14 @@ export default function AccountPage() {
     localStorage.removeItem(AUTH_STORAGE_KEY)
     toast.success('Signed out')
     setSignedIn(false)
+  }
+
+  function handleClearActivityCache() {
+    if (typeof window === 'undefined') return
+    clearActivities()
+    setActivities([])
+    setActivityStats(getActivityStats())
+    toast.success('Activity cache cleared')
   }
 
   if (signedIn === null) {
@@ -243,9 +267,21 @@ export default function AccountPage() {
 
               {/* Activity Tracking Section */}
               <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Activity size={20} className="text-premium-gold" />
-                  <h3 className="font-semibold text-ocean-darkGray">Recent Activity</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Activity size={20} className="text-premium-gold" />
+                    <h3 className="font-semibold text-ocean-darkGray">Recent Activity</h3>
+                  </div>
+                  {activities.length > 0 && (
+                    <button
+                      onClick={handleClearActivityCache}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded border border-red-200 transition"
+                      title="Clear activity cache"
+                    >
+                      <Trash2 size={14} />
+                      Clear Cache
+                    </button>
+                  )}
                 </div>
                 {activities.length === 0 ? (
                   <div className="text-ocean-gray py-8 text-center text-sm">
