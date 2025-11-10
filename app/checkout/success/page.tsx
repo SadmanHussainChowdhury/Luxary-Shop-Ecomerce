@@ -18,7 +18,8 @@ export default function CheckoutSuccessPage() {
       router.push('/cart')
       return
     }
-    // Optionally fetch order details
+    // Order should already be saved in localStorage from checkout page
+    // Just set loading to false
     setLoading(false)
   }, [orderId, router])
 

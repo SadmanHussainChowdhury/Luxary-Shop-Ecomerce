@@ -5,6 +5,38 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ShoppingCart, CreditCard, Package, CheckCircle, AlertCircle, Lock } from 'lucide-react'
 import Link from 'next/link'
+import { trackActivity } from '@/lib/activity-tracker'
+
+const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
+const ORDERS_STORAGE_KEY_PREFIX = 'worldclass_orders_'
+
+function getOrdersStorageKey(): string {
+  if (typeof window === 'undefined') return ''
+  try {
+    const stored = localStorage.getItem(PROFILE_STORAGE_KEY)
+    if (!stored) return ''
+    const parsed = JSON.parse(stored)
+    const email = parsed?.email || ''
+    if (!email) return ''
+    return `${ORDERS_STORAGE_KEY_PREFIX}${email.toLowerCase().replace(/[^a-z0-9]/g, '_')}`
+  } catch {
+    return ''
+  }
+}
+
+function saveOrderToLocalStorage(orderData: any) {
+  if (typeof window === 'undefined') return
+  try {
+    const storageKey = getOrdersStorageKey()
+    if (!storageKey) return
+
+    const existingOrders = JSON.parse(localStorage.getItem(storageKey) || '[]')
+    const updatedOrders = [orderData, ...existingOrders]
+    localStorage.setItem(storageKey, JSON.stringify(updatedOrders))
+  } catch (error) {
+    console.error('Failed to save order to localStorage:', error)
+  }
+}
 
 type CartItem = { slug: string; title: string; price: number; image?: string; quantity: number }
 
@@ -96,6 +128,29 @@ export default function CheckoutPage() {
       
       if (!res.ok) {
         throw new Error(data.error || 'Checkout failed')
+      }
+
+      // Save order to localStorage for account overview
+      if (data.orderId && typeof window !== 'undefined') {
+        const orderForStorage = {
+          _id: data.orderId,
+          createdAt: new Date().toISOString(),
+          total: total,
+          status: formData.paymentMethod === 'cash' ? 'awaiting_payment' : 'paid',
+          items: items.map(item => ({
+            title: item.title,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          shippingAddress: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
+        }
+        saveOrderToLocalStorage(orderForStorage)
+        
+        // Track order_placed activity
+        trackActivity('order_placed', {
+          orderId: data.orderId,
+          orderTotal: total,
+        })
       }
 
       // Clear cart and show success
