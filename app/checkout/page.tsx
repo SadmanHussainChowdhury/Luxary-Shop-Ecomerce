@@ -77,17 +77,22 @@ export default function CheckoutPage() {
   useEffect(() => {
     async function loadPaymentMethods() {
       try {
-        const res = await fetch('/api/site-settings')
+        const res = await fetch('/api/site-settings', { cache: 'no-store' })
         const data = await res.json()
         if (data.settings?.paymentMethods) {
           const enabled = data.settings.paymentMethods.filter((pm: any) => pm.enabled)
           setPaymentMethods(enabled)
           // Set default payment method to first enabled method
           if (enabled.length > 0) {
-            const defaultMethod = enabled[0].name.toLowerCase().includes('cash') ? 'cash' : 
-                                 enabled[0].name.toLowerCase().includes('card') ? 'card' : 
-                                 enabled[0].name.toLowerCase()
-            setFormData(prev => ({ ...prev, paymentMethod: defaultMethod }))
+            const firstMethod = enabled[0]
+            // Use the actual method name as the value for better tracking
+            const defaultMethodValue = firstMethod.name.toLowerCase().includes('cash') ? 'cash' : 
+                                      firstMethod.name.toLowerCase().includes('card') || 
+                                      firstMethod.name.toLowerCase().includes('visa') ||
+                                      firstMethod.name.toLowerCase().includes('mastercard') ||
+                                      firstMethod.name.toLowerCase().includes('amex') ? 'card' : 
+                                      firstMethod.name.toLowerCase().replace(/\s+/g, '_')
+            setFormData(prev => ({ ...prev, paymentMethod: defaultMethodValue }))
           }
         } else {
           // Default fallback
@@ -95,6 +100,7 @@ export default function CheckoutPage() {
             { name: 'Credit/Debit Card', enabled: true },
             { name: 'Cash on Delivery', enabled: true },
           ])
+          setFormData(prev => ({ ...prev, paymentMethod: 'card' }))
         }
       } catch (error) {
         console.error('Failed to load payment methods:', error)
@@ -103,6 +109,7 @@ export default function CheckoutPage() {
           { name: 'Credit/Debit Card', enabled: true },
           { name: 'Cash on Delivery', enabled: true },
         ])
+        setFormData(prev => ({ ...prev, paymentMethod: 'card' }))
       }
     }
     loadPaymentMethods()
@@ -171,7 +178,7 @@ export default function CheckoutPage() {
           _id: data.orderId,
           createdAt: new Date().toISOString(),
           total: total,
-          status: formData.paymentMethod === 'cash' ? 'awaiting_payment' : 'paid',
+          status: formData.paymentMethod === 'cash' || formData.paymentMethod.toLowerCase().includes('delivery') ? 'awaiting_payment' : 'paid',
           items: items.map(item => ({
             title: item.title,
             quantity: item.quantity,
@@ -391,12 +398,21 @@ export default function CheckoutPage() {
               <div className="space-y-3">
                 {paymentMethods.length > 0 ? (
                   paymentMethods.map((method, index) => {
-                    const methodValue = method.name.toLowerCase().includes('cash') ? 'cash' : 
-                                      method.name.toLowerCase().includes('card') ? 'card' : 
-                                      method.name.toLowerCase().replace(/\s+/g, '_')
+                    // Better mapping for payment method values
+                    const methodNameLower = method.name.toLowerCase()
+                    const methodValue = methodNameLower.includes('cash') || methodNameLower.includes('delivery') ? 'cash' : 
+                                      methodNameLower.includes('card') || 
+                                      methodNameLower.includes('visa') ||
+                                      methodNameLower.includes('mastercard') ||
+                                      methodNameLower.includes('amex') ||
+                                      methodNameLower.includes('american express') ? 'card' : 
+                                      methodNameLower.includes('paypal') ? 'paypal' :
+                                      methodNameLower.includes('apple pay') ? 'apple_pay' :
+                                      methodNameLower.includes('google pay') ? 'google_pay' :
+                                      methodNameLower.replace(/\s+/g, '_')
                     return (
                       <label
-                        key={index}
+                        key={`${method.name}-${index}`}
                         className="flex items-center gap-3 p-4 border-2 border-ocean-border rounded-lg cursor-pointer hover:border-premium-gold transition"
                       >
                         <input
@@ -407,7 +423,7 @@ export default function CheckoutPage() {
                           onChange={handleInputChange}
                           className="w-5 h-5 text-premium-gold"
                         />
-                        {method.name.toLowerCase().includes('cash') ? (
+                        {methodNameLower.includes('cash') || methodNameLower.includes('delivery') ? (
                           <Package size={20} className="text-ocean-gray" />
                         ) : (
                           <CreditCard size={20} className="text-ocean-gray" />

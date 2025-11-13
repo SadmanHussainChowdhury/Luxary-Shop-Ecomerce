@@ -45,7 +45,9 @@ export async function POST(req: NextRequest) {
     const calculatedTotal = total || orderItems.reduce((sum, it) => sum + it.price * it.quantity, 0)
 
     // Determine order status based on payment method
-    const status = paymentMethod === 'cash' ? 'awaiting_payment' : 'paid'
+    // Cash on delivery and similar methods require payment on delivery
+    const paymentMethodLower = (paymentMethod || '').toLowerCase()
+    const status = paymentMethodLower === 'cash' || paymentMethodLower.includes('delivery') ? 'awaiting_payment' : 'paid'
 
     // Create order
     const order = await Order.create({
