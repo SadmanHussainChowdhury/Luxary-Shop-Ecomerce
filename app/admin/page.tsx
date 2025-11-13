@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Package, ShoppingCart, Settings, BarChart3, Users, FileText, Bell, RefreshCw, Mail } from 'lucide-react'
+import { Package, ShoppingCart, Settings, BarChart3, Users, FileText, Bell, RefreshCw, Mail, CheckCircle } from 'lucide-react'
 import AdminStats from '@/components/AdminStats'
 
 export default function AdminHomePage() {
@@ -22,6 +22,14 @@ export default function AdminHomePage() {
       href: '/admin/orders',
       icon: ShoppingCart,
       color: 'from-green-500 to-green-600',
+      stats: 'Loading...',
+    },
+    {
+      title: 'Payment Verification',
+      description: 'Verify mobile payment orders',
+      href: '/admin/payment-verification',
+      icon: CheckCircle,
+      color: 'from-yellow-500 to-yellow-600',
       stats: 'Loading...',
     },
     {
@@ -83,6 +91,14 @@ export default function AdminHomePage() {
             href: '/admin/orders',
             icon: ShoppingCart,
             color: 'from-green-500 to-green-600',
+            stats: `${data.stats.awaiting || 0} pending`,
+          },
+          {
+            title: 'Payment Verification',
+            description: 'Verify mobile payment orders',
+            href: '/admin/payment-verification',
+            icon: CheckCircle,
+            color: 'from-yellow-500 to-yellow-600',
             stats: `${data.stats.awaiting || 0} pending`,
           },
           {

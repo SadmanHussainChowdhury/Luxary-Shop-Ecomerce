@@ -28,6 +28,7 @@ export interface IOrder {
   total: number
   status: OrderStatus
   stripeSessionId?: string
+  stripePaymentIntentId?: string
   customer?: ICustomerInfo
   paymentMethod?: string
   createdAt: Date
@@ -60,6 +61,7 @@ const OrderSchema = new Schema<IOrder>({
   total: { type: Number, required: true, min: 0 },
   status: { type: String, enum: ['awaiting_payment', 'paid', 'fulfilled', 'cancelled'], default: 'awaiting_payment', index: true },
   stripeSessionId: { type: String, index: true },
+  stripePaymentIntentId: { type: String, index: true },
   customer: { type: CustomerInfoSchema },
   paymentMethod: { type: String },
 }, { timestamps: true })

@@ -32,6 +32,11 @@ export default function AdminSettingsPage() {
     footerText: '',
     footerDescription: '',
     paymentMethods: [] as Array<{ name: string; enabled: boolean; icon?: string }>,
+    merchantAccounts: {
+      bkash: '',
+      nagad: '',
+      rocket: '',
+    },
     promotionalBanner: {
       enabled: true,
       text: '',
@@ -67,6 +72,7 @@ export default function AdminSettingsPage() {
           footerText: data.settings.footerText || '',
           footerDescription: data.settings.footerDescription || '',
           paymentMethods: data.settings.paymentMethods || [],
+          merchantAccounts: data.settings.merchantAccounts || { bkash: '', nagad: '', rocket: '' },
           promotionalBanner: data.settings.promotionalBanner || { enabled: true, text: '', link: '' },
         })
       }
@@ -407,6 +413,68 @@ export default function AdminSettingsPage() {
             >
               + Add Payment Method
             </button>
+          </div>
+        </div>
+
+        {/* Merchant Account Numbers */}
+        <div>
+          <h3 className="text-lg font-semibold text-ocean-darkGray mb-4">Merchant Account Numbers</h3>
+          <p className="text-sm text-ocean-gray mb-4">Enter your merchant account numbers for mobile payment methods. These will be displayed to customers during checkout.</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-ocean-darkGray mb-2">
+                bKash Account Number
+              </label>
+              <input
+                type="text"
+                value={form.merchantAccounts.bkash || ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    merchantAccounts: { ...form.merchantAccounts, bkash: e.target.value },
+                  })
+                }
+                placeholder="017XXXXXXXX"
+                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+              />
+              <p className="text-xs text-ocean-gray mt-1">Enter your bKash merchant account number</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ocean-darkGray mb-2">
+                Nagad Account Number
+              </label>
+              <input
+                type="text"
+                value={form.merchantAccounts.nagad || ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    merchantAccounts: { ...form.merchantAccounts, nagad: e.target.value },
+                  })
+                }
+                placeholder="017XXXXXXXX"
+                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+              />
+              <p className="text-xs text-ocean-gray mt-1">Enter your Nagad merchant account number</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ocean-darkGray mb-2">
+                Rocket Account Number
+              </label>
+              <input
+                type="text"
+                value={form.merchantAccounts.rocket || ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    merchantAccounts: { ...form.merchantAccounts, rocket: e.target.value },
+                  })
+                }
+                placeholder="017XXXXXXXX"
+                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+              />
+              <p className="text-xs text-ocean-gray mt-1">Enter your Rocket merchant account number</p>
+            </div>
           </div>
         </div>
       </div>

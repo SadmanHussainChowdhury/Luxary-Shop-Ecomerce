@@ -45,9 +45,11 @@ export async function POST(req: NextRequest) {
     const calculatedTotal = total || orderItems.reduce((sum, it) => sum + it.price * it.quantity, 0)
 
     // Determine order status based on payment method
-    // Cash on delivery and similar methods require payment on delivery
+    // Cash on delivery and mobile payment methods (bKash, Nagad, Rocket) require manual verification
     const paymentMethodLower = (paymentMethod || '').toLowerCase()
-    const status = paymentMethodLower === 'cash' || paymentMethodLower.includes('delivery') ? 'awaiting_payment' : 'paid'
+    const isMobilePayment = ['bkash', 'nagad', 'rocket'].includes(paymentMethodLower)
+    const isCashDelivery = paymentMethodLower === 'cash' || paymentMethodLower.includes('delivery')
+    const status = (isCashDelivery || isMobilePayment) ? 'awaiting_payment' : 'paid'
 
     // Create order
     const order = await Order.create({

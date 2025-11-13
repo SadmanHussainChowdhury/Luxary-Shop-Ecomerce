@@ -35,6 +35,9 @@ export async function GET(req: NextRequest) {
           { name: 'PayPal', enabled: true },
           { name: 'Apple Pay', enabled: true },
           { name: 'Google Pay', enabled: true },
+          { name: 'bKash', enabled: true },
+          { name: 'Nagad', enabled: true },
+          { name: 'Rocket', enabled: true },
           { name: 'Cash on Delivery', enabled: true },
         ],
         promotionalBanner: {

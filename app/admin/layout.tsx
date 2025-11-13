@@ -4,7 +4,7 @@ import { ReactNode, useState, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Package, ShoppingCart, Home, Settings, LogOut, Shield, Grid, FileText, Mail, Users, BarChart3 } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, Home, Settings, LogOut, Shield, Grid, FileText, Mail, Users, BarChart3, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
   { href: '/admin/categories', label: 'Categories', icon: Grid },
   { href: '/admin/content', label: 'Content', icon: FileText },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/payment-verification', label: 'Payment Verification', icon: CheckCircle },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/newsletter', label: 'Newsletter', icon: Mail },
   { href: '/admin/settings', label: 'Settings', icon: Settings },

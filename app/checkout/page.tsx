@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { ShoppingCart, CreditCard, Package, CheckCircle, AlertCircle, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { trackActivity } from '@/lib/activity-tracker'
+import StripeCardElement from '@/components/StripeCardElement'
 
 const PROFILE_STORAGE_KEY = 'worldclass_profile_v1'
 const ORDERS_STORAGE_KEY_PREFIX = 'worldclass_orders_'
@@ -60,6 +61,10 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [paymentMethods, setPaymentMethods] = useState<Array<{ name: string; enabled: boolean }>>([])
+  const [merchantAccounts, setMerchantAccounts] = useState<{ bkash?: string; nagad?: string; rocket?: string }>({})
+  const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null)
+  const [stripeOrderId, setStripeOrderId] = useState<string | null>(null)
+  const [processingStripe, setProcessingStripe] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -88,29 +93,40 @@ export default function CheckoutPage() {
         if (data.settings?.paymentMethods) {
           const enabled = data.settings.paymentMethods.filter((pm: any) => pm.enabled)
           setPaymentMethods(enabled)
+          
           // Set default payment method to first enabled method
           if (enabled.length > 0) {
             const firstMethod = enabled[0]
             // Use the actual method name as the value for better tracking
-            const defaultMethodValue = firstMethod.name.toLowerCase().includes('cash') ? 'cash' : 
-                                      firstMethod.name.toLowerCase().includes('card') || 
-                                      firstMethod.name.toLowerCase().includes('visa') ||
-                                      firstMethod.name.toLowerCase().includes('mastercard') ||
-                                      firstMethod.name.toLowerCase().includes('amex') ? 'card' : 
-                                      firstMethod.name.toLowerCase().replace(/\s+/g, '_')
+            const methodNameLower = firstMethod.name.toLowerCase()
+            const defaultMethodValue = methodNameLower.includes('cash') || methodNameLower.includes('delivery') ? 'cash' : 
+                                        methodNameLower.includes('card') || 
+                                        methodNameLower.includes('visa') ||
+                                        methodNameLower.includes('mastercard') ||
+                                        methodNameLower.includes('amex') ? 'card' : 
+                                        methodNameLower.includes('paypal') ? 'paypal' :
+                                        methodNameLower.includes('apple pay') ? 'apple_pay' :
+                                        methodNameLower.includes('google pay') ? 'google_pay' :
+                                        methodNameLower.includes('bkash') ? 'bkash' :
+                                        methodNameLower.includes('nagad') ? 'nagad' :
+                                        methodNameLower.includes('rocket') ? 'rocket' :
+                                        methodNameLower.replace(/\s+/g, '_')
             setFormData(prev => ({ ...prev, paymentMethod: defaultMethodValue }))
           }
         } else {
-          // Default fallback
+          // Default fallback if no payment methods in settings
           setPaymentMethods([
             { name: 'Credit/Debit Card', enabled: true },
             { name: 'Cash on Delivery', enabled: true },
           ])
           setFormData(prev => ({ ...prev, paymentMethod: 'card' }))
         }
+        if (data.settings?.merchantAccounts) {
+          setMerchantAccounts(data.settings.merchantAccounts)
+        }
       } catch (error) {
         console.error('Failed to load payment methods:', error)
-        // Default fallback
+        // Default fallback on error
         setPaymentMethods([
           { name: 'Credit/Debit Card', enabled: true },
           { name: 'Cash on Delivery', enabled: true },
@@ -151,7 +167,62 @@ export default function CheckoutPage() {
         throw new Error('Please fill in all required fields')
       }
 
-      // Create order
+      // Validate phone number for mobile payment methods
+      const isMobilePayment = ['bkash', 'nagad', 'rocket'].includes(formData.paymentMethod.toLowerCase())
+      if (isMobilePayment && !formData.phone) {
+        throw new Error('Phone number is required for mobile payment methods')
+      }
+
+      const paymentMethodLower = formData.paymentMethod.toLowerCase()
+      const isCreditCard = paymentMethodLower === 'card' || 
+                          paymentMethodLower.includes('visa') ||
+                          paymentMethodLower.includes('mastercard') ||
+                          paymentMethodLower.includes('amex') ||
+                          paymentMethodLower.includes('credit') ||
+                          paymentMethodLower.includes('debit')
+
+      // If credit card, create Stripe payment intent first
+      if (isCreditCard && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+        setProcessingStripe(true)
+        try {
+          const intentRes = await fetch('/api/payment/create-intent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              items: items.map(({ slug, quantity }) => ({ slug, quantity })),
+              customer: {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                address: formData.address,
+                city: formData.city,
+                state: formData.state,
+                zipCode: formData.zipCode,
+                country: formData.country,
+              },
+              total,
+            }),
+          })
+
+          const intentData = await intentRes.json()
+          
+          if (!intentRes.ok) {
+            throw new Error(intentData.error || 'Failed to create payment intent')
+          }
+
+          // Store client secret and order ID for Stripe payment
+          setStripeClientSecret(intentData.clientSecret)
+          setStripeOrderId(intentData.orderId)
+          setProcessingStripe(false)
+          setLoading(false)
+          return // Don't proceed with regular checkout, wait for Stripe payment
+        } catch (stripeError: any) {
+          setProcessingStripe(false)
+          throw new Error(stripeError.message || 'Failed to initialize payment')
+        }
+      }
+
+      // For non-credit card payments, proceed with regular checkout
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -180,11 +251,15 @@ export default function CheckoutPage() {
 
       // Save order to localStorage for account overview
       if (data.orderId && typeof window !== 'undefined') {
+        const isCashDelivery = paymentMethodLower === 'cash' || paymentMethodLower.includes('delivery')
+        const orderStatus = (isCashDelivery || isMobilePayment) ? 'awaiting_payment' : 'paid'
+        
         const orderForStorage = {
           _id: data.orderId,
           createdAt: new Date().toISOString(),
           total: total,
-          status: formData.paymentMethod === 'cash' || formData.paymentMethod.toLowerCase().includes('delivery') ? 'awaiting_payment' : 'paid',
+          status: orderStatus,
+          paymentMethod: formData.paymentMethod,
           items: items.map(item => ({
             title: item.title,
             quantity: item.quantity,
@@ -214,6 +289,67 @@ export default function CheckoutPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleStripePaymentSuccess = async (paymentIntentId: string) => {
+    try {
+      // Update order status to paid
+      if (stripeOrderId) {
+        const updateRes = await fetch('/api/payment/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: stripeOrderId,
+            paymentIntentId,
+          }),
+        })
+
+        if (!updateRes.ok) {
+          throw new Error('Failed to confirm payment')
+        }
+
+        // Save order to localStorage
+        if (typeof window !== 'undefined') {
+          const orderForStorage = {
+            _id: stripeOrderId,
+            createdAt: new Date().toISOString(),
+            total: total,
+            status: 'paid',
+            paymentMethod: 'card',
+            items: items.map(item => ({
+              title: item.title,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+            shippingAddress: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
+          }
+          saveOrderToLocalStorage(orderForStorage)
+          
+          // Track order_placed activity
+          trackActivity('order_placed', {
+            orderId: stripeOrderId,
+            orderTotal: total,
+          })
+        }
+
+        // Clear cart and show success
+        clearCart()
+        setSuccess(true)
+        
+        // Redirect to success page
+        setTimeout(() => {
+          router.push(`/checkout/success?orderId=${stripeOrderId}`)
+        }, 2000)
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to confirm payment')
+    }
+  }
+
+  const handleStripePaymentError = (error: string) => {
+    setError(error)
+    setStripeClientSecret(null)
+    setStripeOrderId(null)
   }
 
   if (success) {
@@ -308,15 +444,20 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-ocean-darkGray mb-2">
-                    Phone
+                    Phone {['bkash', 'nagad', 'rocket'].includes(formData.paymentMethod.toLowerCase()) && <span className="text-red-500">*</span>}
                   </label>
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
+                    required={['bkash', 'nagad', 'rocket'].includes(formData.paymentMethod.toLowerCase())}
+                    placeholder="+880 17XX-XXXXXX"
                     className="w-full px-4 py-3 border-2 border-ocean-border rounded-lg focus:outline-none focus:ring-2 focus:ring-premium-gold focus:border-transparent"
                   />
+                  {['bkash', 'nagad', 'rocket'].includes(formData.paymentMethod.toLowerCase()) && (
+                    <p className="text-xs text-ocean-gray mt-1">Required for mobile payment verification</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-ocean-darkGray mb-2">
@@ -415,27 +556,71 @@ export default function CheckoutPage() {
                                       methodNameLower.includes('paypal') ? 'paypal' :
                                       methodNameLower.includes('apple pay') ? 'apple_pay' :
                                       methodNameLower.includes('google pay') ? 'google_pay' :
+                                      methodNameLower.includes('bkash') ? 'bkash' :
+                                      methodNameLower.includes('nagad') ? 'nagad' :
+                                      methodNameLower.includes('rocket') ? 'rocket' :
                                       methodNameLower.replace(/\s+/g, '_')
+                    
+                    // Determine icon based on payment method
+                    const isMobilePayment = methodNameLower.includes('bkash') || methodNameLower.includes('nagad') || methodNameLower.includes('rocket')
+                    const isCashDelivery = methodNameLower.includes('cash') || methodNameLower.includes('delivery')
+                    
                     return (
-                      <label
-                        key={`${method.name}-${index}`}
-                        className="flex items-center gap-3 p-4 border-2 border-ocean-border rounded-lg cursor-pointer hover:border-premium-gold transition"
-                      >
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value={methodValue}
-                          checked={formData.paymentMethod === methodValue}
-                          onChange={handleInputChange}
-                          className="w-5 h-5 text-premium-gold"
-                        />
-                        {methodNameLower.includes('cash') || methodNameLower.includes('delivery') ? (
-                          <Package size={20} className="text-ocean-gray" />
-                        ) : (
-                          <CreditCard size={20} className="text-ocean-gray" />
+                      <div key={`${method.name}-${index}`}>
+                        <label
+                          className="flex items-center gap-3 p-4 border-2 border-ocean-border rounded-lg cursor-pointer hover:border-premium-gold transition"
+                        >
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value={methodValue}
+                            checked={formData.paymentMethod === methodValue}
+                            onChange={handleInputChange}
+                            className="w-5 h-5 text-premium-gold"
+                          />
+                          {isCashDelivery ? (
+                            <Package size={20} className="text-ocean-gray" />
+                          ) : isMobilePayment ? (
+                            <CreditCard size={20} className="text-premium-gold" />
+                          ) : (
+                            <CreditCard size={20} className="text-ocean-gray" />
+                          )}
+                          <span className="font-medium text-ocean-darkGray flex-1">{method.name}</span>
+                          {isMobilePayment && (
+                            <span className="text-xs bg-premium-gold/10 text-premium-gold px-2 py-1 rounded-full font-semibold">
+                              Mobile Payment
+                            </span>
+                          )}
+                        </label>
+                        {isMobilePayment && formData.paymentMethod === methodValue && (
+                          <div className="mt-2 ml-8 p-3 bg-premium-gold/5 border border-premium-gold/20 rounded-lg">
+                            <p className="text-sm text-ocean-darkGray mb-2">
+                              <strong>Instructions for {method.name}:</strong>
+                            </p>
+                            <ul className="text-xs text-ocean-gray space-y-1 list-disc list-inside">
+                              <li>Send payment to our {method.name} account</li>
+                              <li>Include your order number in the payment reference</li>
+                              <li>We'll verify your payment and confirm your order</li>
+                              <li>Make sure your phone number is correct for verification</li>
+                            </ul>
+                            {method.name === 'bKash' && (
+                              <p className="text-xs text-premium-gold mt-2 font-semibold">
+                                bKash Number: {merchantAccounts.bkash || '017XXXXXXXX (Update in admin settings)'}
+                              </p>
+                            )}
+                            {method.name === 'Nagad' && (
+                              <p className="text-xs text-premium-gold mt-2 font-semibold">
+                                Nagad Number: {merchantAccounts.nagad || '017XXXXXXXX (Update in admin settings)'}
+                              </p>
+                            )}
+                            {method.name === 'Rocket' && (
+                              <p className="text-xs text-premium-gold mt-2 font-semibold">
+                                Rocket Number: {merchantAccounts.rocket || '017XXXXXXXX (Update in admin settings)'}
+                              </p>
+                            )}
+                          </div>
                         )}
-                        <span className="font-medium text-ocean-darkGray">{method.name}</span>
-                      </label>
+                      </div>
                     )
                   })
                 ) : (
@@ -467,6 +652,19 @@ export default function CheckoutPage() {
                   </>
                 )}
               </div>
+              
+              {/* Stripe Card Element - Show when credit card is selected and payment intent is created */}
+              {stripeClientSecret && formData.paymentMethod === 'card' && (
+                <div className="mt-6 pt-6 border-t border-ocean-border">
+                  <StripeCardElement
+                    clientSecret={stripeClientSecret}
+                    onPaymentSuccess={handleStripePaymentSuccess}
+                    onPaymentError={handleStripePaymentError}
+                    disabled={loading || processingStripe}
+                  />
+                </div>
+              )}
+              
               <p className="mt-4 text-sm text-ocean-gray">
                 <Lock size={14} className="inline mr-1" />
                 Your payment information is secure and encrypted.
@@ -525,24 +723,30 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Place Order Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-premium-gold to-premium-amber text-white py-4 px-6 rounded-lg font-bold text-lg hover:shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Lock size={20} />
-                    Place Order
-                  </>
-                )}
-              </button>
+              {/* Place Order Button - Hide when Stripe payment is in progress */}
+              {!stripeClientSecret && (
+                <motion.button
+                  type="submit"
+                  disabled={loading || items.length === 0 || processingStripe}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-gradient-to-r from-premium-gold to-premium-amber text-white py-4 px-6 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {loading || processingStripe ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        {processingStripe ? 'Initializing Payment...' : 'Processing...'}
+                      </>
+                    ) : (
+                      <>
+                        Place Order
+                        <Lock size={20} />
+                      </>
+                    )}
+                  </span>
+                </motion.button>
+              )}
 
               <Link href="/cart" className="block text-center text-sm text-ocean-gray hover:text-premium-gold mt-4 transition">
                 ← Back to Cart
