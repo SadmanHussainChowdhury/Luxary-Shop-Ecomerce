@@ -118,9 +118,13 @@ export default function LoginPage() {
         })
       }
 
-      toast.success(`Welcome back, ${data.name?.split(' ')[0] || 'Customer'}!`)
+      // Get first name for welcome message
+      const firstName = data.name?.split(' ')[0] || 'Customer'
+      toast.success(`Welcome back, ${firstName}!`)
       setLoading(false)
-      router.replace(callbackUrl)
+      
+      // Redirect to welcome page first, then to callback URL after 3 seconds
+      router.replace(`/welcome?redirect=${encodeURIComponent(callbackUrl)}`)
     } catch (err: any) {
       console.error('Login error:', err)
       setError('Login failed. Please try again.')

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Package, ShoppingCart, Settings, BarChart3, Users, FileText, Bell, RefreshCw } from 'lucide-react'
+import { Package, ShoppingCart, Settings, BarChart3, Users, FileText, Bell, RefreshCw, Mail } from 'lucide-react'
 import AdminStats from '@/components/AdminStats'
 
 export default function AdminHomePage() {
@@ -38,6 +38,14 @@ export default function AdminHomePage() {
       href: '/admin/users',
       icon: Users,
       color: 'from-purple-500 to-purple-600',
+      stats: 'Loading...',
+    },
+    {
+      title: 'Newsletter',
+      description: 'Manage newsletter subscriptions',
+      href: '/admin/newsletter',
+      icon: Mail,
+      color: 'from-pink-500 to-pink-600',
       stats: 'Loading...',
     },
     {
@@ -92,6 +100,14 @@ export default function AdminHomePage() {
             icon: Users,
             color: 'from-purple-500 to-purple-600',
             stats: `${data.stats.users || 0} users`,
+          },
+          {
+            title: 'Newsletter',
+            description: 'Manage newsletter subscriptions',
+            href: '/admin/newsletter',
+            icon: Mail,
+            color: 'from-pink-500 to-pink-600',
+            stats: `${data.stats.newsletter || 0} subscribers`,
           },
           {
             title: 'Settings',

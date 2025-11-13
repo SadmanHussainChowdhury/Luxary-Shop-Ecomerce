@@ -8,29 +8,39 @@ import { toast } from 'sonner'
 export default function Newsletter() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!email) return
+    if (!email || !email.includes('@')) {
+      toast.error('Please enter a valid email address')
+      return
+    }
 
     if (typeof window === 'undefined') return
 
+    setSubmitting(true)
     try {
-      // Store in localStorage for demo
-      const subscribers = JSON.parse(localStorage.getItem('newsletter_subscribers') || '[]')
-      if (!subscribers.includes(email)) {
-        subscribers.push(email)
-        localStorage.setItem('newsletter_subscribers', JSON.stringify(subscribers))
-      }
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
 
-      setSubscribed(true)
-      toast.success('Successfully subscribed to newsletter!')
-      setEmail('')
-      
-      setTimeout(() => setSubscribed(false), 3000)
+      if (res.ok) {
+        setSubscribed(true)
+        toast.success('Successfully subscribed to newsletter!')
+        setEmail('')
+        setTimeout(() => setSubscribed(false), 3000)
+      } else {
+        toast.error(data.error || 'Failed to subscribe')
+      }
     } catch (error) {
       console.error('Failed to subscribe:', error)
       toast.error('Failed to subscribe. Please try again.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -78,15 +88,21 @@ export default function Newsletter() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                   required
-                  className="flex-1 px-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  disabled={submitting}
+                  className="flex-1 px-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <motion.button
                   type="submit"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-8 py-3 bg-white text-premium-gold rounded-lg font-bold hover:shadow-lg transition"
+                  disabled={submitting}
+                  whileHover={{ scale: submitting ? 1 : 1.05 }}
+                  whileTap={{ scale: submitting ? 1 : 0.95 }}
+                  className="px-8 py-3 bg-white text-premium-gold rounded-lg font-bold hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]"
                 >
-                  Subscribe
+                  {submitting ? (
+                    <div className="w-5 h-5 border-2 border-premium-gold border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    'Subscribe'
+                  )}
                 </motion.button>
               </form>
             )}

@@ -17,6 +17,11 @@ export default function AdminSettingsPage() {
     contactEmail: '',
     contactPhone: '',
     address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: '',
+    businessHours: '',
     socialLinks: {
       facebook: '',
       twitter: '',
@@ -25,6 +30,8 @@ export default function AdminSettingsPage() {
       linkedin: '',
     },
     footerText: '',
+    footerDescription: '',
+    paymentMethods: [] as Array<{ name: string; enabled: boolean; icon?: string }>,
     promotionalBanner: {
       enabled: true,
       text: '',
@@ -51,8 +58,15 @@ export default function AdminSettingsPage() {
           contactEmail: data.settings.contactEmail || '',
           contactPhone: data.settings.contactPhone || '',
           address: data.settings.address || '',
+          city: data.settings.city || '',
+          state: data.settings.state || '',
+          zipCode: data.settings.zipCode || '',
+          country: data.settings.country || '',
+          businessHours: data.settings.businessHours || '',
           socialLinks: data.settings.socialLinks || {},
           footerText: data.settings.footerText || '',
+          footerDescription: data.settings.footerDescription || '',
+          paymentMethods: data.settings.paymentMethods || [],
           promotionalBanner: data.settings.promotionalBanner || { enabled: true, text: '', link: '' },
         })
       }
@@ -169,12 +183,58 @@ export default function AdminSettingsPage() {
                 className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
               />
             </div>
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-sm font-medium text-ocean-darkGray mb-2">Address</label>
               <input
                 type="text"
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ocean-darkGray mb-2">City</label>
+              <input
+                type="text"
+                value={form.city}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ocean-darkGray mb-2">State</label>
+              <input
+                type="text"
+                value={form.state}
+                onChange={(e) => setForm({ ...form, state: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ocean-darkGray mb-2">ZIP Code</label>
+              <input
+                type="text"
+                value={form.zipCode}
+                onChange={(e) => setForm({ ...form, zipCode: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ocean-darkGray mb-2">Country</label>
+              <input
+                type="text"
+                value={form.country}
+                onChange={(e) => setForm({ ...form, country: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ocean-darkGray mb-2">Business Hours</label>
+              <input
+                type="text"
+                value={form.businessHours}
+                onChange={(e) => setForm({ ...form, businessHours: e.target.value })}
+                placeholder="Mon-Fri: 9AM-8PM EST"
                 className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
               />
             </div>
@@ -261,14 +321,85 @@ export default function AdminSettingsPage() {
         {/* Footer */}
         <div>
           <h3 className="text-lg font-semibold text-ocean-darkGray mb-4">Footer</h3>
-          <div>
-            <label className="block text-sm font-medium text-ocean-darkGray mb-2">Footer Text</label>
-            <textarea
-              value={form.footerText}
-              onChange={(e) => setForm({ ...form, footerText: e.target.value })}
-              rows={3}
-              className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
-            />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-ocean-darkGray mb-2">Footer Text</label>
+              <textarea
+                value={form.footerText}
+                onChange={(e) => setForm({ ...form, footerText: e.target.value })}
+                rows={2}
+                placeholder="© 2024 Luxury Shop. All rights reserved."
+                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ocean-darkGray mb-2">Footer Description</label>
+              <textarea
+                value={form.footerDescription}
+                onChange={(e) => setForm({ ...form, footerDescription: e.target.value })}
+                rows={3}
+                placeholder="Your premier destination for luxury products..."
+                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Methods */}
+        <div>
+          <h3 className="text-lg font-semibold text-ocean-darkGray mb-4">Payment Methods</h3>
+          <div className="space-y-3">
+            {form.paymentMethods.length > 0 ? (
+              form.paymentMethods.map((method, index) => (
+                <div key={index} className="flex items-center gap-3 p-3 border border-ocean-border rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={method.enabled}
+                    onChange={(e) => {
+                      const updated = [...form.paymentMethods]
+                      updated[index].enabled = e.target.checked
+                      setForm({ ...form, paymentMethods: updated })
+                    }}
+                    className="w-4 h-4 text-premium-gold rounded focus:ring-premium-gold"
+                  />
+                  <input
+                    type="text"
+                    value={method.name}
+                    onChange={(e) => {
+                      const updated = [...form.paymentMethods]
+                      updated[index].name = e.target.value
+                      setForm({ ...form, paymentMethods: updated })
+                    }}
+                    className="flex-1 px-3 py-2 border border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
+                  />
+                  <button
+                    onClick={() => {
+                      const updated = form.paymentMethods.filter((_, i) => i !== index)
+                      setForm({ ...form, paymentMethods: updated })
+                    }}
+                    className="px-3 py-1 text-red-600 hover:bg-red-50 rounded transition"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-ocean-gray">No payment methods configured. Add one below.</p>
+            )}
+            <button
+              onClick={() => {
+                setForm({
+                  ...form,
+                  paymentMethods: [
+                    ...form.paymentMethods,
+                    { name: 'New Payment Method', enabled: true },
+                  ],
+                })
+              }}
+              className="px-4 py-2 bg-ocean-blue text-white rounded-lg hover:bg-ocean-deep transition font-medium"
+            >
+              + Add Payment Method
+            </button>
           </div>
         </div>
       </div>

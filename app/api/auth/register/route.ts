@@ -17,7 +17,12 @@ export async function POST(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(body.password, 10)
-  const user = await User.create({ name: body.name, email: body.email, passwordHash })
+  const user = await User.create({ 
+    name: body.name, 
+    email: body.email.toLowerCase(), 
+    passwordHash,
+    phone: body.phone || undefined,
+  })
   return NextResponse.json({ id: user._id.toString(), email: user.email, name: user.name })
 }
 

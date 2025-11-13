@@ -1,10 +1,10 @@
 'use client'
 
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useState, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Package, ShoppingCart, Home, Settings, LogOut, Shield, Grid, FileText } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, Home, Settings, LogOut, Shield, Grid, FileText, Mail, Users, BarChart3 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const navItems = [
@@ -13,6 +13,8 @@ const navItems = [
   { href: '/admin/categories', label: 'Categories', icon: Grid },
   { href: '/admin/content', label: 'Content', icon: FileText },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/newsletter', label: 'Newsletter', icon: Mail },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -24,24 +26,29 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [adminName, setAdminName] = useState(DEFAULT_ADMIN_NAME)
+  // Always start with 'pending' to avoid hydration mismatch
   const [authState, setAuthState] = useState<'pending' | 'authorized' | 'denied'>('pending')
+  const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
+  useLayoutEffect(() => {
+    // Set mounted flag
+    setMounted(true)
+    
     // Allow access to login page without auth check
     if (pathname === '/admin/login') {
       setAuthState('authorized')
       return
     }
 
+    // Check authentication synchronously - this runs immediately before paint
     const isSignedIn = localStorage.getItem(ADMIN_STORAGE_KEY) === 'true'
     if (!isSignedIn) {
       setAuthState('denied')
-      router.replace('/admin/login')
+      router.push('/admin/login')
       return
     }
 
+    // Load profile
     const profileRaw = localStorage.getItem(ADMIN_PROFILE_KEY)
     if (profileRaw) {
       try {
@@ -52,6 +59,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       }
     }
 
+    // Authorize immediately
     setAuthState('authorized')
   }, [router, pathname])
 
@@ -64,16 +72,27 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     router.replace('/admin/login')
   }
 
-  if (authState === 'pending') {
+  // Show loading while checking auth (prevents hydration mismatch)
+  if (!mounted || authState === 'pending') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-ocean-lightest">
-        <div className="text-ocean-gray text-sm">Verifying admin access…</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-premium-gold border-t-transparent rounded-full animate-spin" />
+          <div className="text-ocean-gray text-sm">Verifying admin access…</div>
+        </div>
       </div>
     )
   }
 
   if (authState === 'denied') {
-    return null
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ocean-lightest">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-premium-gold border-t-transparent rounded-full animate-spin" />
+          <div className="text-ocean-gray text-sm">Redirecting to login…</div>
+        </div>
+      </div>
+    )
   }
 
   // Don't show admin panel UI on login page

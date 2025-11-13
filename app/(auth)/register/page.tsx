@@ -66,6 +66,7 @@ export default function RegisterPage() {
           name: name.trim(),
           email: normalizedEmail,
           password: password,
+          phone: '', // Phone can be added later in account settings
         }),
       })
 

@@ -52,6 +52,7 @@ export default function WorldClassHeader() {
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [customerName, setCustomerName] = useState('')
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -99,6 +100,7 @@ export default function WorldClassHeader() {
   }, [router])
 
   useEffect(() => {
+    setMounted(true)
     syncAuthState()
     const handleStorageChange = (event: StorageEvent) => {
       if (
@@ -110,9 +112,11 @@ export default function WorldClassHeader() {
       }
     }
 
-    window.addEventListener('storage', handleStorageChange)
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange)
+      return () => {
+        window.removeEventListener('storage', handleStorageChange)
+      }
     }
   }, [syncAuthState])
 
@@ -165,15 +169,17 @@ export default function WorldClassHeader() {
         {/* Top bar */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-2.5 text-[11px] sm:text-sm border-b border-premium-gold/20 bg-gradient-to-r from-premium-gold/5 via-premium-amber/5 to-premium-gold/5">
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 text-ocean-darkGray">
-            <motion.div
-              className="flex items-center gap-2 text-premium-gold font-bold"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Sparkles size={14} className="fill-premium-gold text-premium-gold" />
-              <span className="hidden sm:inline">{siteTagline}</span>
-              <span className="sm:hidden">{siteName}</span>
-            </motion.div>
+            <Link href="/" className="flex items-center gap-2 text-premium-gold font-bold hover:opacity-80 transition-opacity">
+              <motion.div
+                className="flex items-center gap-2"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Sparkles size={14} className="fill-premium-gold text-premium-gold" />
+                <span className="hidden sm:inline">{siteTagline}</span>
+                <span className="sm:hidden">{siteName}</span>
+              </motion.div>
+            </Link>
             {promoEnabled && promoSegments.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 text-premium-gold font-semibold">
                 {promoSegments.map((segment, index) => (
@@ -194,7 +200,7 @@ export default function WorldClassHeader() {
                 Shop Promo
               </Link>
             )}
-            {isSignedIn ? (
+            {mounted && isSignedIn ? (
               <>
                 <span className="px-3 py-1 text-premium-gold font-semibold rounded-lg bg-premium-gold/10 border border-premium-gold/30">
                   Welcome, {customerName}!
@@ -287,9 +293,9 @@ export default function WorldClassHeader() {
             </motion.div>
 
             {/* Logo text with enhanced styling */}
-            <div className="relative">
+            <div className="relative cursor-pointer">
               <motion.span 
-                className="text-xl sm:text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-premium-gold via-premium-amber via-yellow-500 to-premium-gold bg-clip-text text-transparent tracking-tight relative z-10"
+                className="text-xl sm:text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-premium-gold via-premium-amber via-yellow-500 to-premium-gold bg-clip-text text-transparent tracking-tight relative z-10 block"
                 whileHover={{ scale: 1.08 }}
                 animate={{
                   backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
@@ -308,7 +314,7 @@ export default function WorldClassHeader() {
               
               {/* Shimmer effect overlay */}
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"
                 animate={{
                   x: ['-100%', '100%'],
                 }}
@@ -481,13 +487,18 @@ export default function WorldClassHeader() {
                         Shop Promo
                       </Link>
                     )}
-                    {isSignedIn ? (
-                      <button
-                        onClick={handleSignOut}
-                        className="text-premium-gold hover:text-premium-amber py-2 text-left"
-                      >
-                        Log Out
-                      </button>
+                    {mounted && isSignedIn ? (
+                      <>
+                        <span className="text-premium-gold font-semibold py-2 text-left">
+                          Welcome, {customerName}!
+                        </span>
+                        <button
+                          onClick={handleSignOut}
+                          className="text-premium-gold hover:text-premium-amber py-2 text-left"
+                        >
+                          Log Out
+                        </button>
+                      </>
                     ) : (
                       <>
                         <Link

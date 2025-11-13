@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongoose'
-
-// Simple in-memory storage for newsletter (in production, use database)
-const newsletterEmails = new Set<string>()
+import { NewsletterSubscription } from '@/models/NewsletterSubscription'
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,14 +11,54 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
     }
 
-    // In production, save to database
-    newsletterEmails.add(email.toLowerCase())
+    await connectToDatabase()
+
+    const normalizedEmail = email.toLowerCase().trim()
+
+    // Check if email already exists
+    const existing = await NewsletterSubscription.findOne({ email: normalizedEmail })
+
+    if (existing) {
+      // If exists but unsubscribed, reactivate it
+      if (!existing.isActive) {
+        existing.isActive = true
+        existing.subscribedAt = new Date()
+        existing.unsubscribedAt = undefined
+        await existing.save()
+        return NextResponse.json({ 
+          success: true, 
+          message: 'Successfully re-subscribed to newsletter!' 
+        })
+      }
+      // Already subscribed
+      return NextResponse.json({ 
+        success: true, 
+        message: 'You are already subscribed to our newsletter!' 
+      })
+    }
+
+    // Create new subscription
+    await NewsletterSubscription.create({
+      email: normalizedEmail,
+      subscribedAt: new Date(),
+      isActive: true,
+    })
 
     return NextResponse.json({ 
       success: true, 
       message: 'Successfully subscribed to newsletter!' 
     })
   } catch (error: any) {
+    console.error('Newsletter subscription error:', error)
+    
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return NextResponse.json({ 
+        success: true, 
+        message: 'You are already subscribed to our newsletter!' 
+      })
+    }
+
     return NextResponse.json(
       { error: error.message || 'Failed to subscribe' },
       { status: 500 }

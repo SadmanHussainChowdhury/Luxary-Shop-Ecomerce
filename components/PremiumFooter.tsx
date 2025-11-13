@@ -24,12 +24,61 @@ import {
   Heart,
   Zap
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
+
+interface SiteSettings {
+  siteName?: string
+  contactEmail?: string
+  contactPhone?: string
+  address?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  country?: string
+  businessHours?: string
+  footerText?: string
+  footerDescription?: string
+  socialLinks?: {
+    facebook?: string
+    twitter?: string
+    instagram?: string
+    youtube?: string
+    linkedin?: string
+  }
+  paymentMethods?: Array<{
+    name: string
+    enabled: boolean
+    icon?: string
+  }>
+}
 
 export default function PremiumFooter() {
   const [email, setEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [settings, setSettings] = useState<SiteSettings>({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/site-settings', { cache: 'no-store' })
+        const data = await res.json()
+        if (data.settings) {
+          setSettings(data.settings)
+          console.log('Footer settings loaded:', {
+            paymentMethods: data.settings.paymentMethods?.length || 0,
+            enabled: data.settings.paymentMethods?.filter((m: any) => m.enabled).length || 0
+          })
+        }
+      } catch (error) {
+        console.error('Failed to load site settings:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadSettings()
+  }, [])
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -122,7 +171,7 @@ export default function PremiumFooter() {
                 </div>
                 <div>
                   <h3 className="text-2xl font-bold bg-gradient-to-r from-premium-gold to-premium-amber bg-clip-text text-transparent">
-                    Luxury Shop
+                    {settings.siteName || 'Luxury Shop'}
                   </h3>
                   <p className="text-white/80 text-sm">Premium Shopping Experience</p>
                 </div>
@@ -204,25 +253,35 @@ export default function PremiumFooter() {
                 <div className="flex items-center gap-2 mb-4">
                   <Crown size={24} className="text-premium-gold fill-premium-gold" />
                   <h3 className="text-xl font-bold bg-gradient-to-r from-premium-gold to-premium-amber bg-clip-text text-transparent">
-                    Luxury Shop
+                    {settings.siteName || 'Luxury Shop'}
                   </h3>
                 </div>
                 <p className="text-white/70 text-sm mb-4 leading-relaxed">
-                  Your premier destination for luxury products. Experience world-class quality and exceptional service.
+                  {settings.footerDescription || 'Your premier destination for luxury products. Experience world-class quality and exceptional service.'}
                 </p>
                 <div className="space-y-2 text-sm text-white/70">
                   <div className="flex items-center gap-2">
                     <MapPin size={14} />
-                    <span>123 Luxury Street, Premium City</span>
+                    <span>
+                      {settings.address || ''}
+                      {settings.city && `, ${settings.city}`}
+                      {settings.state && `, ${settings.state}`}
+                      {settings.zipCode && ` ${settings.zipCode}`}
+                      {!settings.address && !settings.city && '123 Luxury Street, Premium City'}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Phone size={14} />
-                    <span>+1 (555) 123-4567</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail size={14} />
-                    <span>support@luxuryshop.com</span>
-                  </div>
+                  {settings.contactPhone && (
+                    <div className="flex items-center gap-2">
+                      <Phone size={14} />
+                      <span>{settings.contactPhone}</span>
+                    </div>
+                  )}
+                  {settings.contactEmail && (
+                    <div className="flex items-center gap-2">
+                      <Mail size={14} />
+                      <span>{settings.contactEmail}</span>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </div>
@@ -420,31 +479,35 @@ export default function PremiumFooter() {
               </h4>
               <div className="flex flex-wrap gap-3 mb-6">
                 {[
-                  { icon: Facebook, label: 'Facebook', color: 'hover:bg-blue-600', url: 'https://facebook.com' },
-                  { icon: Twitter, label: 'Twitter', color: 'hover:bg-sky-500', url: 'https://twitter.com' },
-                  { icon: Instagram, label: 'Instagram', color: 'hover:bg-pink-600', url: 'https://instagram.com' },
-                  { icon: Youtube, label: 'Youtube', color: 'hover:bg-red-600', url: 'https://youtube.com' },
-                  { icon: Linkedin, label: 'LinkedIn', color: 'hover:bg-blue-700', url: 'https://linkedin.com' },
-                ].map((social, i) => (
-                  <motion.a
-                    key={i}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -3 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`p-3 bg-white/10 backdrop-blur-sm rounded-lg ${social.color} transition-colors border border-white/20 hover:border-transparent`}
-                    title={social.label}
-                  >
-                    <social.icon size={20} className="text-white" />
-                  </motion.a>
-                ))}
+                  { icon: Facebook, label: 'Facebook', color: 'hover:bg-blue-600', url: settings.socialLinks?.facebook },
+                  { icon: Twitter, label: 'Twitter', color: 'hover:bg-sky-500', url: settings.socialLinks?.twitter },
+                  { icon: Instagram, label: 'Instagram', color: 'hover:bg-pink-600', url: settings.socialLinks?.instagram },
+                  { icon: Youtube, label: 'Youtube', color: 'hover:bg-red-600', url: settings.socialLinks?.youtube },
+                  { icon: Linkedin, label: 'LinkedIn', color: 'hover:bg-blue-700', url: settings.socialLinks?.linkedin },
+                ]
+                  .filter((social) => social.url)
+                  .map((social, i) => (
+                    <motion.a
+                      key={i}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.1, y: -3 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`p-3 bg-white/10 backdrop-blur-sm rounded-lg ${social.color} transition-colors border border-white/20 hover:border-transparent`}
+                      title={social.label}
+                    >
+                      <social.icon size={20} className="text-white" />
+                    </motion.a>
+                  ))}
               </div>
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-white/70">
-                  <Clock size={14} />
-                  <span>Mon-Fri: 9AM-8PM EST</span>
-                </div>
+                {settings.businessHours && (
+                  <div className="flex items-center gap-2 text-sm text-white/70">
+                    <Clock size={14} />
+                    <span>{settings.businessHours}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 text-sm text-white/70">
                   <Star size={14} className="text-premium-gold fill-premium-gold" />
                   <span>4.9/5 Customer Rating</span>
@@ -462,15 +525,34 @@ export default function PremiumFooter() {
                   We Accept
                 </h4>
                 <div className="flex flex-wrap gap-3">
-                  {['Visa', 'Mastercard', 'Amex', 'PayPal', 'Apple Pay', 'Google Pay'].map((method, i) => (
-                    <motion.div
-                      key={i}
-                      whileHover={{ scale: 1.1 }}
-                      className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 text-sm font-medium"
-                    >
-                      {method}
-                    </motion.div>
-                  ))}
+                  {loading ? (
+                    // Loading state
+                    <div className="text-white/60 text-sm">Loading payment methods...</div>
+                  ) : settings.paymentMethods && settings.paymentMethods.length > 0 ? (
+                    // Dynamic payment methods from settings
+                    settings.paymentMethods
+                      .filter((method) => method.enabled)
+                      .map((method, i) => (
+                        <motion.div
+                          key={i}
+                          whileHover={{ scale: 1.1 }}
+                          className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 text-sm font-medium"
+                        >
+                          {method.name}
+                        </motion.div>
+                      ))
+                  ) : (
+                    // Fallback default payment methods
+                    ['Visa', 'Mastercard', 'Amex', 'PayPal', 'Apple Pay', 'Google Pay'].map((method, i) => (
+                      <motion.div
+                        key={i}
+                        whileHover={{ scale: 1.1 }}
+                        className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 text-sm font-medium"
+                      >
+                        {method}
+                      </motion.div>
+                    ))
+                  )}
                 </div>
               </div>
               <div>
@@ -503,7 +585,7 @@ export default function PremiumFooter() {
           <div className="border-t border-white/10 pt-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-sm text-white/60">
-                <span>© {new Date().getFullYear()} Luxury Shop.</span>
+                <span>{settings.footerText || `© ${new Date().getFullYear()} ${settings.siteName || 'Luxury Shop'}.`}</span>
                 <span className="hidden sm:inline">All rights reserved.</span>
                 <motion.span
                   className="inline-flex items-center gap-1 text-premium-gold"

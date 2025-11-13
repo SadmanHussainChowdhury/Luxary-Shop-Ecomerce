@@ -59,6 +59,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState<Array<{ name: string; enabled: boolean }>>([])
 
   // Form state
   const [formData, setFormData] = useState({
@@ -72,6 +73,40 @@ export default function CheckoutPage() {
     country: 'United States',
     paymentMethod: 'card',
   })
+
+  useEffect(() => {
+    async function loadPaymentMethods() {
+      try {
+        const res = await fetch('/api/site-settings')
+        const data = await res.json()
+        if (data.settings?.paymentMethods) {
+          const enabled = data.settings.paymentMethods.filter((pm: any) => pm.enabled)
+          setPaymentMethods(enabled)
+          // Set default payment method to first enabled method
+          if (enabled.length > 0) {
+            const defaultMethod = enabled[0].name.toLowerCase().includes('cash') ? 'cash' : 
+                                 enabled[0].name.toLowerCase().includes('card') ? 'card' : 
+                                 enabled[0].name.toLowerCase()
+            setFormData(prev => ({ ...prev, paymentMethod: defaultMethod }))
+          }
+        } else {
+          // Default fallback
+          setPaymentMethods([
+            { name: 'Credit/Debit Card', enabled: true },
+            { name: 'Cash on Delivery', enabled: true },
+          ])
+        }
+      } catch (error) {
+        console.error('Failed to load payment methods:', error)
+        // Default fallback
+        setPaymentMethods([
+          { name: 'Credit/Debit Card', enabled: true },
+          { name: 'Cash on Delivery', enabled: true },
+        ])
+      }
+    }
+    loadPaymentMethods()
+  }, [])
 
   useEffect(() => {
     const cartItems = loadCart()
@@ -354,30 +389,61 @@ export default function CheckoutPage() {
                 Payment Method
               </h2>
               <div className="space-y-3">
-                <label className="flex items-center gap-3 p-4 border-2 border-ocean-border rounded-lg cursor-pointer hover:border-premium-gold transition">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="card"
-                    checked={formData.paymentMethod === 'card'}
-                    onChange={handleInputChange}
-                    className="w-5 h-5 text-premium-gold"
-                  />
-                  <CreditCard size={20} className="text-ocean-gray" />
-                  <span className="font-medium text-ocean-darkGray">Credit/Debit Card</span>
-                </label>
-                <label className="flex items-center gap-3 p-4 border-2 border-ocean-border rounded-lg cursor-pointer hover:border-premium-gold transition">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="cash"
-                    checked={formData.paymentMethod === 'cash'}
-                    onChange={handleInputChange}
-                    className="w-5 h-5 text-premium-gold"
-                  />
-                  <Package size={20} className="text-ocean-gray" />
-                  <span className="font-medium text-ocean-darkGray">Cash on Delivery</span>
-                </label>
+                {paymentMethods.length > 0 ? (
+                  paymentMethods.map((method, index) => {
+                    const methodValue = method.name.toLowerCase().includes('cash') ? 'cash' : 
+                                      method.name.toLowerCase().includes('card') ? 'card' : 
+                                      method.name.toLowerCase().replace(/\s+/g, '_')
+                    return (
+                      <label
+                        key={index}
+                        className="flex items-center gap-3 p-4 border-2 border-ocean-border rounded-lg cursor-pointer hover:border-premium-gold transition"
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value={methodValue}
+                          checked={formData.paymentMethod === methodValue}
+                          onChange={handleInputChange}
+                          className="w-5 h-5 text-premium-gold"
+                        />
+                        {method.name.toLowerCase().includes('cash') ? (
+                          <Package size={20} className="text-ocean-gray" />
+                        ) : (
+                          <CreditCard size={20} className="text-ocean-gray" />
+                        )}
+                        <span className="font-medium text-ocean-darkGray">{method.name}</span>
+                      </label>
+                    )
+                  })
+                ) : (
+                  <>
+                    <label className="flex items-center gap-3 p-4 border-2 border-ocean-border rounded-lg cursor-pointer hover:border-premium-gold transition">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="card"
+                        checked={formData.paymentMethod === 'card'}
+                        onChange={handleInputChange}
+                        className="w-5 h-5 text-premium-gold"
+                      />
+                      <CreditCard size={20} className="text-ocean-gray" />
+                      <span className="font-medium text-ocean-darkGray">Credit/Debit Card</span>
+                    </label>
+                    <label className="flex items-center gap-3 p-4 border-2 border-ocean-border rounded-lg cursor-pointer hover:border-premium-gold transition">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="cash"
+                        checked={formData.paymentMethod === 'cash'}
+                        onChange={handleInputChange}
+                        className="w-5 h-5 text-premium-gold"
+                      />
+                      <Package size={20} className="text-ocean-gray" />
+                      <span className="font-medium text-ocean-darkGray">Cash on Delivery</span>
+                    </label>
+                  </>
+                )}
               </div>
               <p className="mt-4 text-sm text-ocean-gray">
                 <Lock size={14} className="inline mr-1" />

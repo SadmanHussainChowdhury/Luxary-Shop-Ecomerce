@@ -3,6 +3,7 @@ import { connectToDatabase } from '@/lib/mongoose'
 import { Product } from '@/models/Product'
 import { Order } from '@/models/Order'
 import { User } from '@/models/User'
+import { NewsletterSubscription } from '@/models/NewsletterSubscription'
 import { requireAdmin } from '@/lib/auth-server'
 
 export async function GET(req: NextRequest) {
@@ -13,10 +14,11 @@ export async function GET(req: NextRequest) {
     await connectToDatabase()
 
     // Fetch all stats in parallel
-    const [products, orders, users, recentOrders] = await Promise.all([
+    const [products, orders, users, newsletterSubscriptions, recentOrders] = await Promise.all([
       Product.countDocuments(),
       Order.countDocuments(),
       User.countDocuments(),
+      NewsletterSubscription.countDocuments({ isActive: true }),
       Order.find().sort({ createdAt: -1 }).limit(10).lean(),
     ])
 
@@ -107,6 +109,7 @@ export async function GET(req: NextRequest) {
         products,
         orders,
         users,
+        newsletter: newsletterSubscriptions,
         revenue: revenue.toFixed(2),
         awaiting,
         paid,

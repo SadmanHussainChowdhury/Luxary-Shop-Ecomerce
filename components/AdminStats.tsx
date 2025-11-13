@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Package, ShoppingCart, DollarSign, Users, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react'
+import { Package, ShoppingCart, DollarSign, Users, TrendingUp, TrendingDown, RefreshCw, Mail } from 'lucide-react'
 
 interface StatCardProps {
   title: string
@@ -60,6 +60,7 @@ export default function AdminStats() {
     products: 0,
     orders: 0,
     users: 0,
+    newsletter: 0,
     revenue: '0',
   })
   const [trends, setTrends] = useState({
@@ -82,6 +83,7 @@ export default function AdminStats() {
           products: data.stats.products || 0,
           orders: data.stats.orders || 0,
           users: data.stats.users || 0,
+          newsletter: data.stats.newsletter || 0,
           revenue: data.stats.revenue ? `$${Number(data.stats.revenue).toLocaleString()}` : '$0',
         })
         setTrends(data.trends || { products: 0, orders: 0, users: 0, revenue: 0 })
@@ -134,6 +136,13 @@ export default function AdminStats() {
       color: 'bg-purple-500',
       gradient: 'from-purple-500 to-purple-600',
     },
+    {
+      title: 'Newsletter Subscribers',
+      value: stats.newsletter.toLocaleString(),
+      icon: Mail,
+      color: 'bg-pink-500',
+      gradient: 'from-pink-500 to-pink-600',
+    },
   ]
 
   return (
@@ -155,7 +164,7 @@ export default function AdminStats() {
           </motion.button>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         {statCards.map((stat, i) => (
           <StatCard key={i} {...stat} loading={loading} />
         ))}
