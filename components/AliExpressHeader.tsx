@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Grid, Sparkles, Crown, Menu, X } from 'lucide-react'
+import { Search, Grid, Sparkles, Crown, Menu, X, ChevronDown } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
@@ -53,6 +53,7 @@ export default function WorldClassHeader() {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [customerName, setCustomerName] = useState('')
   const [mounted, setMounted] = useState(false)
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -163,6 +164,19 @@ export default function WorldClassHeader() {
     loadSiteSettings()
   }, [])
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!accountDropdownOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest('.account-dropdown-container')) {
+        setAccountDropdownOpen(false)
+      }
+    }
+    window.addEventListener('click', handleClickOutside)
+    return () => window.removeEventListener('click', handleClickOutside)
+  }, [accountDropdownOpen])
+
   return (
     <header className="relative bg-gradient-to-r from-white/95 via-white/90 to-white/95 backdrop-blur-xl border-b border-premium-gold/20 sticky top-0 z-50 shadow-lg shadow-premium-gold/5">
       <div className="container mx-auto px-4">
@@ -192,26 +206,48 @@ export default function WorldClassHeader() {
             )}
           </div>
           <div className="hidden sm:flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
-            {promoEnabled && promoLink && (
-              <Link
-                href={promoLink}
-                className="px-3 py-1 bg-white text-premium-gold border border-premium-gold/40 rounded-lg font-semibold hover:bg-premium-gold hover:text-white transition-all w-full sm:w-auto text-center"
-              >
-                Shop Promo
-              </Link>
-            )}
             {mounted && isSignedIn ? (
-              <>
-                <span className="px-3 py-1 text-premium-gold font-semibold rounded-lg bg-premium-gold/10 border border-premium-gold/30">
-                  Welcome, {customerName}!
-                </span>
+              <div className="relative account-dropdown-container">
                 <button
-                  onClick={handleSignOut}
-                  className="px-3 py-1 bg-gradient-to-r from-premium-gold/20 to-premium-amber/20 hover:from-premium-gold/30 hover:to-premium-amber/30 rounded-lg font-semibold text-premium-gold transition-all border border-premium-gold/30"
+                  onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1 text-premium-gold font-semibold rounded-lg bg-premium-gold/10 border border-premium-gold/30 hover:bg-premium-gold/20 transition-all"
                 >
-                  Log Out
+                  Welcome, {customerName}!
+                  <ChevronDown 
+                    size={16} 
+                    className={`transition-transform ${accountDropdownOpen ? 'rotate-180' : ''}`}
+                  />
                 </button>
-              </>
+                <AnimatePresence>
+                  {accountDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-48 bg-white border border-premium-gold/30 rounded-lg shadow-xl z-50 overflow-hidden"
+                    >
+                      {promoEnabled && promoLink && (
+                        <Link
+                          href={promoLink}
+                          onClick={() => setAccountDropdownOpen(false)}
+                          className="block px-4 py-3 text-ocean-darkGray hover:bg-premium-gold/10 hover:text-premium-gold transition-colors border-b border-premium-gold/10"
+                        >
+                          Shop Promo
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => {
+                          setAccountDropdownOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full text-left px-4 py-3 text-ocean-darkGray hover:bg-premium-gold/10 hover:text-premium-gold transition-colors"
+                      >
+                        Log Out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <>
                 <Link 
@@ -489,11 +525,23 @@ export default function WorldClassHeader() {
                     )}
                     {mounted && isSignedIn ? (
                       <>
-                        <span className="text-premium-gold font-semibold py-2 text-left">
+                        <div className="text-premium-gold font-semibold py-2 text-left border-b border-ocean-border pb-3 mb-2">
                           Welcome, {customerName}!
-                        </span>
+                        </div>
+                        {promoEnabled && promoLink && (
+                          <Link
+                            href={promoLink}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="text-ocean-blue hover:text-ocean-deep py-2 text-left block"
+                          >
+                            Shop Promo
+                          </Link>
+                        )}
                         <button
-                          onClick={handleSignOut}
+                          onClick={() => {
+                            setMobileMenuOpen(false)
+                            handleSignOut()
+                          }}
                           className="text-premium-gold hover:text-premium-amber py-2 text-left"
                         >
                           Log Out

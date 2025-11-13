@@ -27,15 +27,37 @@ export default function CartPage() {
   const [message, setMessage] = useState<string | null>(null)
 
   useEffect(() => {
-    setItems(loadCart())
+    const loadItems = () => setItems(loadCart())
+    loadItems()
+    
+    // Listen for cart updates from other pages/components
+    const handleCartUpdate = () => {
+      loadItems()
+    }
+    
+    window.addEventListener('cart:updated', handleCartUpdate as any)
+    window.addEventListener('storage', (e) => {
+      if (e.key === STORAGE_KEY) {
+        loadItems()
+      }
+    })
+    
+    return () => {
+      window.removeEventListener('cart:updated', handleCartUpdate as any)
+    }
   }, [])
 
   const subtotal = useMemo(() => items.reduce((sum, i) => sum + i.price * i.quantity, 0), [items])
 
-  function updateQuantity(slug: string, q: number) {
+  function updateQuantity(slug: string, q: number | string) {
+    const quantity = typeof q === 'string' ? parseInt(q, 10) : q
+    if (isNaN(quantity) || quantity < 1) return // Don't update if invalid
+    
     setItems((prev) => {
-      const next = prev.map((i) => (i.slug === slug ? { ...i, quantity: Math.max(1, Math.min(99, q)) } : i))
+      const next = prev.map((i) => (i.slug === slug ? { ...i, quantity: Math.max(1, Math.min(99, quantity)) } : i))
       saveCart(next)
+      // Dispatch event to update cart button count
+      try { window.dispatchEvent(new Event('cart:updated')) } catch {}
       return next
     })
   }
@@ -44,6 +66,8 @@ export default function CartPage() {
     setItems((prev) => {
       const next = prev.filter((i) => i.slug !== slug)
       saveCart(next)
+      // Dispatch event to update cart button count
+      try { window.dispatchEvent(new Event('cart:updated')) } catch {}
       return next
     })
   }
@@ -106,7 +130,21 @@ export default function CartPage() {
                         min={1}
                         max={99}
                         value={item.quantity}
-                        onChange={(e) => updateQuantity(item.slug, Number(e.target.value))}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === '' || value === '0') return // Allow empty/zero temporarily while typing
+                          const num = parseInt(value, 10)
+                          if (!isNaN(num)) {
+                            updateQuantity(item.slug, num)
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Ensure valid quantity on blur
+                          const value = parseInt(e.target.value, 10)
+                          if (isNaN(value) || value < 1) {
+                            updateQuantity(item.slug, 1)
+                          }
+                        }}
                         className="w-20 rounded border border-ocean-border px-3 py-2 text-sm"
                       />
                       <button onClick={() => removeItem(item.slug)} className="text-ocean-red hover:underline text-sm">
