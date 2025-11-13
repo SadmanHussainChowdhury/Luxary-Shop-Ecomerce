@@ -83,7 +83,10 @@ export default function AdminSettingsPage() {
     try {
       const res = await fetch('/api/admin/site-settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
         body: JSON.stringify(form),
       })
       const data = await res.json()
@@ -92,7 +95,11 @@ export default function AdminSettingsPage() {
         return
       }
       toast.success('Settings saved successfully!')
+      
+      // Reload settings to ensure we have the latest from server
+      await loadSettings()
     } catch (error) {
+      console.error('Save settings error:', error)
       toast.error('Failed to save settings')
     } finally {
       setSaving(false)

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongoose'
 import { SiteSettings, type ISiteSettings } from '@/models/SiteSettings'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET(req: NextRequest) {
   try {
     await connectToDatabase()
@@ -42,7 +45,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ settings: defaults })
     }
 
-    return NextResponse.json({ settings })
+    return NextResponse.json(
+      { settings },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    )
   } catch (error: any) {
     console.error('Error fetching site settings:', error)
     return NextResponse.json(

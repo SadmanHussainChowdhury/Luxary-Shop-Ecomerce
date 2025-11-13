@@ -67,14 +67,41 @@ export async function PUT(req: NextRequest) {
     
     await connectToDatabase()
     
+    // Ensure paymentMethods is properly formatted
+    if (body.paymentMethods && Array.isArray(body.paymentMethods)) {
+      body.paymentMethods = body.paymentMethods.map((pm: any) => ({
+        name: pm.name || '',
+        enabled: pm.enabled !== undefined ? pm.enabled : true,
+        icon: pm.icon || undefined,
+      }))
+    }
+    
     // Update or create settings
     const settings = await SiteSettings.findOneAndUpdate(
       {},
       { $set: body },
-      { upsert: true, new: true }
+      { upsert: true, new: true, runValidators: true }
     )
     
-    return NextResponse.json({ settings, message: 'Settings updated successfully' })
+    // Verify the update was successful
+    if (!settings) {
+      return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })
+    }
+    
+    // Fetch fresh settings to ensure we return the latest data
+    const updatedSettings = await SiteSettings.findOne().lean()
+    
+    // Return updated settings with no-cache headers
+    return NextResponse.json(
+      { settings: updatedSettings || settings, message: 'Settings updated successfully' },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    )
   } catch (error: any) {
     if (error.message?.includes('redirect')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

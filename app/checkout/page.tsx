@@ -77,7 +77,13 @@ export default function CheckoutPage() {
   useEffect(() => {
     async function loadPaymentMethods() {
       try {
-        const res = await fetch('/api/site-settings', { cache: 'no-store' })
+        // Add timestamp to prevent caching
+        const res = await fetch(`/api/site-settings?t=${Date.now()}`, { 
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        })
         const data = await res.json()
         if (data.settings?.paymentMethods) {
           const enabled = data.settings.paymentMethods.filter((pm: any) => pm.enabled)

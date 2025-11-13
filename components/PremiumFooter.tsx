@@ -59,11 +59,17 @@ export default function PremiumFooter() {
   const [settings, setSettings] = useState<SiteSettings>({})
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function loadSettings() {
-      try {
-        const res = await fetch('/api/site-settings', { cache: 'no-store' })
-        const data = await res.json()
+         useEffect(() => {
+           async function loadSettings() {
+             try {
+               // Add timestamp to prevent caching
+               const res = await fetch(`/api/site-settings?t=${Date.now()}`, { 
+                 cache: 'no-store',
+                 headers: {
+                   'Cache-Control': 'no-cache',
+                 },
+               })
+               const data = await res.json()
         if (data.settings) {
           setSettings(data.settings)
           console.log('Footer settings loaded:', {
