@@ -1,0 +1,139 @@
+{
+  "common": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "readMore": "Read More",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  },
+  "nav": {
+    "aboutUs": "About Us",
+    "about": "About",
+    "ceoMessage": "CEO Message",
+    "contactUs": "Contact Us",
+    "taxRefund": "Tax Refund",
+    "incomeTaxRefund": "Income Tax Refund",
+    "houseRentTaxRefund": "House Rent Tax Refund",
+    "familyTaxRefund": "Family Tax Refund",
+    "visaChanges": "Visa Changes",
+    "jobSupport": "Job Support",
+    "helpSupport": "Help & Support"
+  },
+  "home": {
+    "title": "Welcome to MultiLang Site",
+    "subtitle": "Your trusted partner for tax refund services",
+    "description": "We specialize in helping individuals and families navigate the complex process of tax refunds, ensuring you receive the maximum benefits you're entitled to."
+  },
+  "about": {
+    "title": "About Us",
+    "subtitle": "Your trusted partner for tax refund services",
+    "description": "Welcome to MultiLang Site, your trusted partner for tax refund services. We specialize in helping individuals and families navigate the complex process of tax refunds, ensuring you receive the maximum benefits you're entitled to.",
+    "mission": "Our Mission",
+    "missionText": "To provide exceptional tax refund services with integrity, professionalism, and personalized attention to each client.",
+    "vision": "Our Vision",
+    "visionText": "To be the leading tax refund service provider, recognized for our expertise and commitment to client success.",
+    "services": "Our Services",
+    "service1": "Income Tax Refund",
+    "service2": "House Rent Tax Refund",
+    "service3": "Family Tax Refund",
+    "service4": "Expert consultation and guidance"
+  },
+  "ceoMessage": {
+    "title": "CEO Message",
+    "greeting": "Dear Valued Clients and Partners,",
+    "message1": "Welcome to MultiLang Site. I am honored to lead a team dedicated to helping you navigate the complexities of tax refunds and maximize your benefits.",
+    "message2": "Our commitment to excellence, integrity, and personalized service sets us apart. We understand that each client's situation is unique, and we tailor our services to meet your specific needs.",
+    "message3": "Thank you for trusting us with your tax refund needs. We look forward to serving you and helping you achieve your financial goals.",
+    "signature": "Best regards,",
+    "ceoName": "CEO, MultiLang Site"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Get in touch with our office",
+    "formTitle": "Registration Form",
+    "formSubtitle": "Please fill in all required fields marked with *",
+    "name": "Full Name",
+    "alienNumber": "Alien Registration Number",
+    "passportNumber": "Passport Number",
+    "nationality": "Nationality",
+    "phone": "Phone Number",
+    "serviceType": "Service Type",
+    "message": "Additional Information",
+    "submit": "Submit Registration",
+    "success": "Your registration has been submitted. Thank you!",
+    "error": "Submission failed. Please try again."
+  },
+  "services": {
+    "incomeTax": "Income Tax Refund",
+    "houseRent": "House Rent Tax Refund",
+    "familyTax": "Family Tax Refund",
+    "other": "Other"
+  },
+  "incomeTaxRefund": {
+    "title": "Income Tax Refund",
+    "description": "Get your income tax refund processed quickly and efficiently with our expert team.",
+    "details": "We help you navigate the complex tax system and ensure you receive the maximum refund you're entitled to. Our experienced professionals will guide you through every step of the process.",
+    "benefits": "Benefits",
+    "benefit1": "Fast processing times",
+    "benefit2": "Expert guidance",
+    "benefit3": "Maximum refund guarantee",
+    "benefit4": "Personalized service"
+  },
+  "houseRentTaxRefund": {
+    "title": "House Rent Tax Refund",
+    "description": "Claim your house rent tax refund with our expert assistance.",
+    "details": "We understand the complexities of rental tax deductions and will help you maximize your refund. Our team ensures all eligible expenses are properly documented and claimed.",
+    "benefits": "Benefits",
+    "benefit1": "Comprehensive documentation",
+    "benefit2": "Expert tax advice",
+    "benefit3": "Maximum deductions",
+    "benefit4": "Dedicated support"
+  },
+  "familyTaxRefund": {
+    "title": "Family Tax Refund",
+    "description": "Maximize your family tax refund benefits with our comprehensive services.",
+    "details": "We help families navigate tax deductions and credits to ensure you receive all the benefits you're entitled to. Our services include child tax credits, dependent deductions, and more.",
+    "benefits": "Benefits",
+    "benefit1": "Family-focused expertise",
+    "benefit2": "All eligible credits",
+    "benefit3": "Comprehensive review",
+    "benefit4": "Ongoing support"
+  },
+  "visaChanges": {
+    "title": "Visa Changes",
+    "description": "Expert assistance with visa status changes and updates.",
+    "details": "We provide comprehensive support for visa changes, status updates, and related documentation. Our team ensures all paperwork is properly filed and processed.",
+    "services": "Our Visa Services",
+    "service1": "Visa status changes",
+    "service2": "Documentation assistance",
+    "service3": "Application support",
+    "service4": "Consultation services"
+  },
+  "jobSupport": {
+    "title": "Job Support",
+    "description": "Comprehensive job search and career support services.",
+    "details": "We offer a range of services to help you find employment, including resume writing, interview preparation, job search assistance, and career counseling.",
+    "services": "Our Job Support Services",
+    "service1": "Resume writing and optimization",
+    "service2": "Interview preparation",
+    "service3": "Job search assistance",
+    "service4": "Career counseling"
+  },
+  "supportedCountries": {
+    "title": "Supported Countries",
+    "subtitle": "We provide services to clients from the following countries",
+    "description": "Our multilingual team is ready to assist clients from various countries. Select your country to see specific contact information and services available in your region."
+  }
+}

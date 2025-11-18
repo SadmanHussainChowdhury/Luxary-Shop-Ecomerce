@@ -1,0 +1,140 @@
+{
+  "common": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "register": "Registrarse",
+    "dashboard": "Panel",
+    "admin": "Administrador",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Atrás",
+    "readMore": "Leer más",
+    "getStarted": "Comenzar",
+    "learnMore": "Saber más"
+  },
+  "nav": {
+    "aboutUs": "Acerca de nosotros",
+    "about": "Acerca de",
+    "ceoMessage": "Mensaje del CEO",
+    "contactUs": "Contáctenos",
+    "taxRefund": "Reembolso de impuestos",
+    "incomeTaxRefund": "Reembolso de impuesto sobre la renta",
+    "houseRentTaxRefund": "Reembolso de impuesto por alquiler de vivienda",
+    "familyTaxRefund": "Reembolso de impuesto familiar",
+    "visaChanges": "Cambios de visa",
+    "jobSupport": "Apoyo laboral",
+    "helpSupport": "Ayuda y soporte"
+  },
+  "home": {
+    "title": "Bienvenido a MultiLang Site",
+    "subtitle": "Su socio de confianza para servicios de reembolso de impuestos",
+    "description": "Nos especializamos en ayudar a individuos y familias a navegar el complejo proceso de reembolsos de impuestos, asegurando que reciba los máximos beneficios a los que tiene derecho."
+  },
+  "about": {
+    "title": "Acerca de nosotros",
+    "subtitle": "Su socio de confianza para servicios de reembolso de impuestos",
+    "description": "Bienvenido a MultiLang Site, su socio de confianza para servicios de reembolso de impuestos. Nos especializamos en ayudar a individuos y familias a navegar el complejo proceso de reembolsos de impuestos.",
+    "mission": "Nuestra misión",
+    "missionText": "Proporcionar servicios excepcionales de reembolso de impuestos con integridad, profesionalismo y atención personalizada a cada cliente.",
+    "vision": "Nuestra visión",
+    "visionText": "Ser el proveedor líder de servicios de reembolso de impuestos, reconocido por nuestra experiencia y compromiso con el éxito del cliente.",
+    "services": "Nuestros servicios",
+    "service1": "Reembolso de impuesto sobre la renta",
+    "service2": "Reembolso de impuesto por alquiler de vivienda",
+    "service3": "Reembolso de impuesto familiar",
+    "service4": "Consulta y orientación experta"
+  },
+  "ceoMessage": {
+    "title": "Mensaje del CEO",
+    "greeting": "Estimados clientes y socios,",
+    "message1": "Bienvenido a MultiLang Site. Me enorgullece liderar un equipo dedicado a ayudarlo a navegar las complejidades de los reembolsos de impuestos y maximizar sus beneficios.",
+    "message2": "Nuestro compromiso con la excelencia, la integridad y el servicio personalizado nos distingue. Entendemos que la situación de cada cliente es única y adaptamos nuestros servicios para satisfacer sus necesidades específicas.",
+    "message3": "Gracias por confiar en nosotros con sus necesidades de reembolso de impuestos. Esperamos servirle y ayudarle a alcanzar sus objetivos financieros.",
+    "signature": "Atentamente,",
+    "ceoName": "CEO, MultiLang Site"
+  },
+  "contact": {
+    "title": "Contáctenos",
+    "subtitle": "Póngase en contacto con nuestra oficina",
+    "formTitle": "Formulario de registro",
+    "formSubtitle": "Por favor complete todos los campos requeridos marcados con *",
+    "name": "Nombre completo",
+    "alienNumber": "Número de registro de extranjero",
+    "passportNumber": "Número de pasaporte",
+    "nationality": "Nacionalidad",
+    "phone": "Número de teléfono",
+    "serviceType": "Tipo de servicio",
+    "message": "Información adicional",
+    "submit": "Enviar registro",
+    "success": "Su registro ha sido enviado. ¡Gracias!",
+    "error": "El envío falló. Por favor intente nuevamente."
+  },
+  "services": {
+    "incomeTax": "Reembolso de impuesto sobre la renta",
+    "houseRent": "Reembolso de impuesto por alquiler de vivienda",
+    "familyTax": "Reembolso de impuesto familiar",
+    "other": "Otro"
+  },
+  "incomeTaxRefund": {
+    "title": "Reembolso de impuesto sobre la renta",
+    "description": "Obtenga su reembolso de impuesto sobre la renta procesado rápida y eficientemente con nuestro equipo experto.",
+    "details": "Lo ayudamos a navegar el complejo sistema tributario y nos aseguramos de que reciba el reembolso máximo al que tiene derecho.",
+    "benefits": "Beneficios",
+    "benefit1": "Tiempos de procesamiento rápidos",
+    "benefit2": "Orientación experta",
+    "benefit3": "Garantía de reembolso máximo",
+    "benefit4": "Servicio personalizado"
+  },
+  "houseRentTaxRefund": {
+    "title": "Reembolso de impuesto por alquiler de vivienda",
+    "description": "Reclame su reembolso de impuesto por alquiler de vivienda con nuestra asistencia experta.",
+    "details": "Entendemos las complejidades de las deducciones de impuestos por alquiler y lo ayudaremos a maximizar su reembolso.",
+    "benefits": "Beneficios",
+    "benefit1": "Documentación completa",
+    "benefit2": "Asesoramiento fiscal experto",
+    "benefit3": "Deducciones máximas",
+    "benefit4": "Soporte dedicado"
+  },
+  "familyTaxRefund": {
+    "title": "Reembolso de impuesto familiar",
+    "description": "Maximice los beneficios de su reembolso de impuesto familiar con nuestros servicios integrales.",
+    "details": "Ayudamos a las familias a navegar las deducciones y créditos fiscales para asegurar que reciban todos los beneficios a los que tienen derecho.",
+    "benefits": "Beneficios",
+    "benefit1": "Experiencia centrada en la familia",
+    "benefit2": "Todos los créditos elegibles",
+    "benefit3": "Revisión integral",
+    "benefit4": "Soporte continuo"
+  },
+  "visaChanges": {
+    "title": "Cambios de visa",
+    "description": "Asistencia experta con cambios y actualizaciones de estado de visa.",
+    "details": "Proporcionamos soporte integral para cambios de visa, actualizaciones de estado y documentación relacionada.",
+    "services": "Nuestros servicios de visa",
+    "service1": "Cambios de estado de visa",
+    "service2": "Asistencia con documentación",
+    "service3": "Soporte de aplicación",
+    "service4": "Servicios de consultoría"
+  },
+  "jobSupport": {
+    "title": "Apoyo laboral",
+    "description": "Servicios integrales de búsqueda de empleo y apoyo profesional.",
+    "details": "Ofrecemos una variedad de servicios para ayudarlo a encontrar empleo, incluyendo redacción de currículum, preparación para entrevistas, asistencia en la búsqueda de empleo y asesoramiento profesional.",
+    "services": "Nuestros servicios de apoyo laboral",
+    "service1": "Redacción y optimización de currículum",
+    "service2": "Preparación para entrevistas",
+    "service3": "Asistencia en la búsqueda de empleo",
+    "service4": "Asesoramiento profesional"
+  },
+  "supportedCountries": {
+    "title": "Países admitidos",
+    "subtitle": "Brindamos servicios a clientes de los siguientes países",
+    "description": "Nuestro equipo multilingüe está listo para asistir a clientes de varios países. Seleccione su país para ver información de contacto específica y servicios disponibles en su región."
+  }
+}
+
