@@ -12,6 +12,10 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const locale = searchParams.get('locale') || 'en';
 
+    if (!slug) {
+      return NextResponse.json({ message: 'Slug is required' }, { status: 400 });
+    }
+
     await connectDB();
 
     const page = await Page.findOne({
@@ -22,6 +26,7 @@ export async function GET(
     });
 
     if (!page) {
+      // Return 404 but don't throw error - let client handle fallback
       return NextResponse.json({ message: 'Page not found' }, { status: 404 });
     }
 
@@ -29,7 +34,7 @@ export async function GET(
   } catch (error) {
     console.error('Fetch page error:', error);
     return NextResponse.json(
-      { message: 'Failed to fetch page' },
+      { message: 'Failed to fetch page', error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

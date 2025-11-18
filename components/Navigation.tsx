@@ -2,20 +2,69 @@
 
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LanguageSwitcher from './LanguageSwitcher';
+
+interface Logo {
+  imageUrl: string;
+  altText?: string;
+}
 
 export default function Navigation() {
   const t = useTranslations('nav');
   const locale = useLocale();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [logo, setLogo] = useState<Logo | null>(null);
+  const [logoLoading, setLogoLoading] = useState(true);
+
+  useEffect(() => {
+    fetchLogo();
+  }, [locale]);
+
+  const fetchLogo = async () => {
+    try {
+      setLogoLoading(true);
+      const response = await fetch(`/api/logo?locale=${locale}`);
+      if (response.ok) {
+        const data = await response.json();
+        setLogo(data.data);
+      } else {
+        // Fallback to text logo if no logo in database
+        setLogo(null);
+      }
+    } catch (error) {
+      console.error('Error fetching logo:', error);
+      setLogo(null);
+    } finally {
+      setLogoLoading(false);
+    }
+  };
 
   return (
     <nav className="glass sticky top-0 z-50 border-b border-white/20 premium-shadow">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-20">
-          <Link href={`/${locale}`} className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
-            MultiLang Site
+          <Link href={`/${locale}`} className="flex items-center gap-3 hover:scale-105 transition-transform duration-300">
+            {logoLoading ? (
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg animate-pulse"></div>
+            ) : logo && logo.imageUrl ? (
+              <img
+                src={logo.imageUrl}
+                alt={logo.altText || 'Logo'}
+                className="h-12 w-auto object-contain"
+                onError={(e) => {
+                  // Fallback to text if image fails to load
+                  const parent = (e.target as HTMLImageElement).parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<span class="text-3xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">MultiLang Site</span>';
+                  }
+                }}
+              />
+            ) : (
+              <span className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                MultiLang Site
+              </span>
+            )}
           </Link>
 
           {/* Desktop Menu */}

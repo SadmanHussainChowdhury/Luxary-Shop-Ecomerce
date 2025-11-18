@@ -17,6 +17,7 @@ export function usePageContent(slug: string, fallbackTitle?: string, fallbackCon
 
   useEffect(() => {
     fetchPageContent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, locale]);
 
   const fetchPageContent = async () => {

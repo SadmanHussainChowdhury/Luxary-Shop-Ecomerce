@@ -130,64 +130,81 @@ export default function AdminRegistrationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Premium Background Effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
+      </div>
+
       <Navigation />
       <AdminNav />
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Registrations Management</h1>
-            <p className="text-gray-600 mt-1">
-              Manage and view all registration submissions
-              {totalCount > 0 && (
-                <span className="ml-2 text-blue-600 font-semibold">({totalCount} total)</span>
-              )}
-            </p>
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <div className="mb-8 animate-fade-in">
+          <div className="inline-block mb-4">
+            <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 rounded-full text-sm font-semibold premium-shadow">
+              Registration Management
+            </span>
           </div>
-          <div className="flex gap-3">
-            <Link
-              href={`/${locale}/admin`}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
-            >
-              Dashboard
-            </Link>
-            <button
-              onClick={exportToCSV}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-            >
-              Export CSV
-            </button>
-            <button
-              onClick={fetchRegistrations}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              Refresh
-            </button>
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h1 className="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Registrations
+              </h1>
+              <p className="text-xl text-slate-600">
+                Manage and view all registration submissions
+                {totalCount > 0 && (
+                  <span className="ml-2 px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 rounded-full text-sm font-semibold">
+                    {totalCount} total
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href={`/${locale}/admin`}
+                className="px-6 py-3 glass text-slate-700 font-semibold rounded-xl premium-shadow hover:scale-105 transition-all duration-300 border border-white/30"
+              >
+                Dashboard
+              </Link>
+              <button
+                onClick={exportToCSV}
+                className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl premium-shadow-lg hover:scale-105 transition-all duration-300"
+              >
+                Export CSV
+              </button>
+              <button
+                onClick={fetchRegistrations}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl premium-shadow-lg hover:scale-105 transition-all duration-300"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="glass rounded-2xl premium-shadow-lg p-6 mb-6 border border-white/30 animate-slide-up">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+              <label className="block text-sm font-bold text-slate-700 mb-3">Search</label>
               <input
                 type="text"
                 placeholder="Search by name, alien number, nationality, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-5 py-3 glass border-2 border-white/30 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-300 bg-white/50 backdrop-blur-sm hover:border-blue-300"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Service Type</label>
+              <label className="block text-sm font-bold text-slate-700 mb-3">Filter by Service Type</label>
               <select
                 value={filterType}
                 onChange={(e) => {
                   setFilterType(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-5 py-3 glass border-2 border-white/30 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-300 bg-white/50 backdrop-blur-sm hover:border-blue-300"
               >
                 <option value="all">All Types</option>
                 <option value="income_tax">Income Tax Refund</option>
@@ -200,18 +217,21 @@ export default function AdminRegistrationsPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="glass rounded-2xl premium-shadow-lg overflow-hidden border border-white/30 animate-slide-up">
           {loading ? (
-            <div className="p-8 text-center">
-              <div className="text-xl">Loading registrations...</div>
+            <div className="p-12 text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
+              <p className="text-xl font-semibold text-slate-700">Loading registrations...</p>
             </div>
           ) : filteredRegistrations.length === 0 ? (
             <div className="p-12 text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No registrations found</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="h-10 w-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 className="mt-2 text-lg font-bold text-slate-800">No registrations found</h3>
+              <p className="mt-1 text-sm text-slate-600">
                 {searchTerm || filterType !== 'all'
                   ? 'Try adjusting your search or filter criteria.'
                   : 'No registrations have been submitted yet.'}
@@ -220,8 +240,8 @@ export default function AdminRegistrationsPage() {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-slate-200/50">
+                  <thead className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 backdrop-blur-sm">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Name
@@ -246,9 +266,9 @@ export default function AdminRegistrationsPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white/50 backdrop-blur-sm divide-y divide-slate-200/50">
                     {filteredRegistrations.map((registration) => (
-                      <tr key={registration._id} className="hover:bg-gray-50">
+                      <tr key={registration._id} className="hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 transition-all duration-200">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {registration.name}
                         </td>

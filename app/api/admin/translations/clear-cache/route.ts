@@ -1,0 +1,28 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { clearCache } from '@/lib/translationCache';
+
+// POST - Clear translation cache
+export async function POST(request: NextRequest) {
+  try {
+    let locale: string | undefined;
+    try {
+      const body = await request.json();
+      locale = body?.locale;
+    } catch {
+      // Empty body is fine
+    }
+
+    clearCache(locale);
+
+    return NextResponse.json({
+      message: locale ? `Cache cleared for ${locale}` : 'All cache cleared',
+    });
+  } catch (error) {
+    console.error('Clear cache error:', error);
+    return NextResponse.json(
+      { message: 'Failed to clear cache' },
+      { status: 500 }
+    );
+  }
+}
+
