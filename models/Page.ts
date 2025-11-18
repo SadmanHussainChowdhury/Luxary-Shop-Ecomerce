@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import mongoose, { Document, Model, Schema, Query } from 'mongoose';
 
 export interface IPage extends Document {
   title: string;
@@ -11,6 +11,11 @@ export interface IPage extends Document {
   deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Extend Query interface for custom query methods
+interface IPageQuery extends Query<any, IPage> {
+  notDeleted(): IPageQuery;
 }
 
 const PageSchema = new Schema<IPage>(
@@ -59,7 +64,7 @@ const PageSchema = new Schema<IPage>(
 PageSchema.index({ slug: 1, locale: 1 }, { unique: true });
 
 // Soft delete query helper
-PageSchema.query.notDeleted = function () {
+(PageSchema.query as any).notDeleted = function (this: IPageQuery) {
   return this.where({ deletedAt: null });
 };
 
