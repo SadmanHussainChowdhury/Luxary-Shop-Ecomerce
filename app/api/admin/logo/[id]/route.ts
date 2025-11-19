@@ -3,6 +3,9 @@ import connectDB from '@/lib/mongodb';
 import Logo from '@/models/Logo';
 import { z } from 'zod';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 const logoUpdateSchema = z.object({
   name: z.string().min(1).trim().optional(),
   imageUrl: z.string().url().trim().optional(),

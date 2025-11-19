@@ -3,6 +3,9 @@ import connectDB from '@/lib/mongodb';
 import Translation from '@/models/Translation';
 import { z } from 'zod';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 const translationUpdateSchema = z.object({
   key: z.string().min(1).trim().optional(),
   locale: z.enum(['en', 'ar', 'bn', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'zh', 'vi', 'th', 'km', 'id', 'ne', 'uz', 'fil', 'mn', 'ur', 'si', 'ta', 'my']).optional(),

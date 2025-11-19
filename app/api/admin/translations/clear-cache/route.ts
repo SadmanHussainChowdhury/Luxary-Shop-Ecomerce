@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { clearCache } from '@/lib/translationCache';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 // POST - Clear translation cache
 export async function POST(request: NextRequest) {
   try {
