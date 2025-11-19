@@ -1,0 +1,140 @@
+{
+  "common": {
+    "home": "Home",
+    "about": "Chi siamo",
+    "contact": "Contatto",
+    "login": "Accedi",
+    "logout": "Esci",
+    "register": "Registrati",
+    "dashboard": "Dashboard",
+    "admin": "Amministratore",
+    "submit": "Invia",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "back": "Indietro",
+    "readMore": "Leggi di più",
+    "getStarted": "Inizia",
+    "learnMore": "Scopri di più"
+  },
+  "nav": {
+    "aboutUs": "Chi siamo",
+    "about": "Chi siamo",
+    "ceoMessage": "Messaggio del CEO",
+    "contactUs": "Contattaci",
+    "taxRefund": "Rimborso fiscale",
+    "incomeTaxRefund": "Rimborso imposta sul reddito",
+    "houseRentTaxRefund": "Rimborso imposta affitto casa",
+    "familyTaxRefund": "Rimborso imposta familiare",
+    "visaChanges": "Modifiche visto",
+    "jobSupport": "Supporto lavorativo",
+    "helpSupport": "Aiuto e supporto"
+  },
+  "home": {
+    "title": "Benvenuto su MultiLang Site",
+    "subtitle": "Il tuo partner affidabile per i servizi di rimborso fiscale",
+    "description": "Siamo specializzati nell'aiutare individui e famiglie a navigare nel complesso processo di rimborsi fiscali, assicurandoti di ricevere i massimi benefici a cui hai diritto."
+  },
+  "about": {
+    "title": "Chi siamo",
+    "subtitle": "Il tuo partner affidabile per i servizi di rimborso fiscale",
+    "description": "Benvenuto su MultiLang Site, il tuo partner affidabile per i servizi di rimborso fiscale. Siamo specializzati nell'aiutare individui e famiglie a navigare nel complesso processo di rimborsi fiscali.",
+    "mission": "La nostra missione",
+    "missionText": "Fornire servizi eccezionali di rimborso fiscale con integrità, professionalità e attenzione personalizzata per ogni cliente.",
+    "vision": "La nostra visione",
+    "visionText": "Essere il principale fornitore di servizi di rimborso fiscale, riconosciuto per la nostra competenza e impegno per il successo del cliente.",
+    "services": "I nostri servizi",
+    "service1": "Rimborso imposta sul reddito",
+    "service2": "Rimborso imposta affitto casa",
+    "service3": "Rimborso imposta familiare",
+    "service4": "Consulenza e guida esperta"
+  },
+  "ceoMessage": {
+    "title": "Messaggio del CEO",
+    "greeting": "Cari clienti e partner,",
+    "message1": "Benvenuto su MultiLang Site. Sono onorato di guidare un team dedicato ad aiutarti a navigare nelle complessità dei rimborsi fiscali e massimizzare i tuoi benefici.",
+    "message2": "Il nostro impegno per l'eccellenza, l'integrità e il servizio personalizzato ci distingue. Comprendiamo che la situazione di ogni cliente è unica e adattiamo i nostri servizi per soddisfare le tue esigenze specifiche.",
+    "message3": "Grazie per averci affidato le tue esigenze di rimborso fiscale. Non vediamo l'ora di servirti e aiutarti a raggiungere i tuoi obiettivi finanziari.",
+    "signature": "Cordiali saluti,",
+    "ceoName": "CEO, MultiLang Site"
+  },
+  "contact": {
+    "title": "Contattaci",
+    "subtitle": "Mettiti in contatto con il nostro ufficio",
+    "formTitle": "Modulo di registrazione",
+    "formSubtitle": "Si prega di compilare tutti i campi obbligatori contrassegnati con *",
+    "name": "Nome completo",
+    "alienNumber": "Numero di registrazione straniero",
+    "passportNumber": "Numero di passaporto",
+    "nationality": "Nazionalità",
+    "phone": "Numero di telefono",
+    "serviceType": "Tipo di servizio",
+    "message": "Informazioni aggiuntive",
+    "submit": "Invia registrazione",
+    "success": "La tua registrazione è stata inviata. Grazie!",
+    "error": "Invio fallito. Si prega di riprovare."
+  },
+  "services": {
+    "incomeTax": "Rimborso imposta sul reddito",
+    "houseRent": "Rimborso imposta affitto casa",
+    "familyTax": "Rimborso imposta familiare",
+    "other": "Altro"
+  },
+  "incomeTaxRefund": {
+    "title": "Rimborso imposta sul reddito",
+    "description": "Ottieni il tuo rimborso dell'imposta sul reddito elaborato rapidamente ed efficientemente con il nostro team di esperti.",
+    "details": "Ti aiutiamo a navigare nel complesso sistema fiscale e ci assicuriamo che tu riceva il rimborso massimo a cui hai diritto.",
+    "benefits": "Vantaggi",
+    "benefit1": "Tempi di elaborazione rapidi",
+    "benefit2": "Guida esperta",
+    "benefit3": "Garanzia di rimborso massimo",
+    "benefit4": "Servizio personalizzato"
+  },
+  "houseRentTaxRefund": {
+    "title": "Rimborso imposta affitto casa",
+    "description": "Richiedi il tuo rimborso dell'imposta sull'affitto della casa con la nostra assistenza esperta.",
+    "details": "Comprendiamo le complessità delle detrazioni fiscali sugli affitti e ti aiuteremo a massimizzare il tuo rimborso.",
+    "benefits": "Vantaggi",
+    "benefit1": "Documentazione completa",
+    "benefit2": "Consulenza fiscale esperta",
+    "benefit3": "Detrazioni massime",
+    "benefit4": "Supporto dedicato"
+  },
+  "familyTaxRefund": {
+    "title": "Rimborso imposta familiare",
+    "description": "Massimizza i benefici del tuo rimborso dell'imposta familiare con i nostri servizi completi.",
+    "details": "Aiutiamo le famiglie a navigare nelle detrazioni e nei crediti fiscali per assicurarci che tu riceva tutti i benefici a cui hai diritto.",
+    "benefits": "Vantaggi",
+    "benefit1": "Competenza focalizzata sulla famiglia",
+    "benefit2": "Tutti i crediti idonei",
+    "benefit3": "Revisione completa",
+    "benefit4": "Supporto continuo"
+  },
+  "visaChanges": {
+    "title": "Modifiche visto",
+    "description": "Assistenza esperta per modifiche e aggiornamenti dello stato del visto.",
+    "details": "Forniamo supporto completo per modifiche del visto, aggiornamenti dello stato e documentazione correlata.",
+    "services": "I nostri servizi per visti",
+    "service1": "Modifiche dello stato del visto",
+    "service2": "Assistenza documentazione",
+    "service3": "Supporto per domande",
+    "service4": "Servizi di consulenza"
+  },
+  "jobSupport": {
+    "title": "Supporto lavorativo",
+    "description": "Servizi completi di ricerca lavoro e supporto professionale.",
+    "details": "Offriamo una gamma di servizi per aiutarti a trovare lavoro, inclusa la scrittura di curriculum, la preparazione ai colloqui, l'assistenza nella ricerca di lavoro e la consulenza professionale.",
+    "services": "I nostri servizi di supporto lavorativo",
+    "service1": "Scrittura e ottimizzazione curriculum",
+    "service2": "Preparazione ai colloqui",
+    "service3": "Assistenza nella ricerca di lavoro",
+    "service4": "Consulenza professionale"
+  },
+  "supportedCountries": {
+    "title": "Paesi supportati",
+    "subtitle": "Forniamo servizi a clienti dei seguenti paesi",
+    "description": "Il nostro team multilingue è pronto ad assistere clienti di vari paesi. Seleziona il tuo paese per vedere informazioni di contatto specifiche e servizi disponibili nella tua regione."
+  }
+}
+

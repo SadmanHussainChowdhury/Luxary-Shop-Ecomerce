@@ -1,0 +1,140 @@
+{
+  "common": {
+    "home": "首页",
+    "about": "关于我们",
+    "contact": "联系我们",
+    "login": "登录",
+    "logout": "退出",
+    "register": "注册",
+    "dashboard": "仪表板",
+    "admin": "管理员",
+    "submit": "提交",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "back": "返回",
+    "readMore": "阅读更多",
+    "getStarted": "开始",
+    "learnMore": "了解更多"
+  },
+  "nav": {
+    "aboutUs": "关于我们",
+    "about": "关于",
+    "ceoMessage": "首席执行官致辞",
+    "contactUs": "联系我们",
+    "taxRefund": "退税",
+    "incomeTaxRefund": "所得税退税",
+    "houseRentTaxRefund": "房屋租金税退税",
+    "familyTaxRefund": "家庭税退税",
+    "visaChanges": "签证变更",
+    "jobSupport": "就业支持",
+    "helpSupport": "帮助与支持"
+  },
+  "home": {
+    "title": "欢迎来到多语言网站",
+    "subtitle": "您值得信赖的退税服务合作伙伴",
+    "description": "我们专门帮助个人和家庭应对复杂的退税流程，确保您获得应得的最大利益。"
+  },
+  "about": {
+    "title": "关于我们",
+    "subtitle": "您值得信赖的退税服务合作伙伴",
+    "description": "欢迎来到多语言网站，您值得信赖的退税服务合作伙伴。我们专门帮助个人和家庭应对复杂的退税流程。",
+    "mission": "我们的使命",
+    "missionText": "以诚信、专业和对每位客户的个性化关注提供卓越的退税服务。",
+    "vision": "我们的愿景",
+    "visionText": "成为领先的退税服务提供商，以我们的专业知识和对客户成功的承诺而闻名。",
+    "services": "我们的服务",
+    "service1": "所得税退税",
+    "service2": "房屋租金税退税",
+    "service3": "家庭税退税",
+    "service4": "专家咨询和指导"
+  },
+  "ceoMessage": {
+    "title": "首席执行官致辞",
+    "greeting": "尊敬的客户和合作伙伴，",
+    "message1": "欢迎来到多语言网站。我很荣幸领导一个致力于帮助您应对退税复杂性并最大化您利益的团队。",
+    "message2": "我们对卓越、诚信和个性化服务的承诺使我们与众不同。我们理解每位客户的情况都是独特的，我们调整服务以满足您的特定需求。",
+    "message3": "感谢您信任我们处理您的退税需求。我们期待为您服务并帮助您实现财务目标。",
+    "signature": "此致",
+    "ceoName": "首席执行官，多语言网站"
+  },
+  "contact": {
+    "title": "联系我们",
+    "subtitle": "联系我们的办公室",
+    "formTitle": "注册表格",
+    "formSubtitle": "请填写所有标有*的必填字段",
+    "name": "全名",
+    "alienNumber": "外国人登记号",
+    "passportNumber": "护照号码",
+    "nationality": "国籍",
+    "phone": "电话号码",
+    "serviceType": "服务类型",
+    "message": "附加信息",
+    "submit": "提交注册",
+    "success": "您的注册已提交。谢谢！",
+    "error": "提交失败。请重试。"
+  },
+  "services": {
+    "incomeTax": "所得税退税",
+    "houseRent": "房屋租金税退税",
+    "familyTax": "家庭税退税",
+    "other": "其他"
+  },
+  "incomeTaxRefund": {
+    "title": "所得税退税",
+    "description": "通过我们的专家团队快速高效地处理您的所得税退税。",
+    "details": "我们帮助您应对复杂的税务系统，确保您获得应得的最高退税。",
+    "benefits": "优势",
+    "benefit1": "快速处理时间",
+    "benefit2": "专家指导",
+    "benefit3": "最高退税保证",
+    "benefit4": "个性化服务"
+  },
+  "houseRentTaxRefund": {
+    "title": "房屋租金税退税",
+    "description": "通过我们的专家协助申请您的房屋租金税退税。",
+    "details": "我们了解租金税扣除的复杂性，将帮助您最大化退税。",
+    "benefits": "优势",
+    "benefit1": "全面文档",
+    "benefit2": "专家税务建议",
+    "benefit3": "最大扣除额",
+    "benefit4": "专门支持"
+  },
+  "familyTaxRefund": {
+    "title": "家庭税退税",
+    "description": "通过我们的全面服务最大化您的家庭税退税利益。",
+    "details": "我们帮助家庭应对税务扣除和抵免，确保您获得所有应得的利益。",
+    "benefits": "优势",
+    "benefit1": "以家庭为中心的专业知识",
+    "benefit2": "所有符合条件的抵免",
+    "benefit3": "全面审查",
+    "benefit4": "持续支持"
+  },
+  "visaChanges": {
+    "title": "签证变更",
+    "description": "签证状态变更和更新的专家协助。",
+    "details": "我们为签证变更、状态更新和相关文件提供全面支持。",
+    "services": "我们的签证服务",
+    "service1": "签证状态变更",
+    "service2": "文件协助",
+    "service3": "申请支持",
+    "service4": "咨询服务"
+  },
+  "jobSupport": {
+    "title": "就业支持",
+    "description": "全面的求职和职业支持服务。",
+    "details": "我们提供一系列服务来帮助您找到工作，包括简历撰写、面试准备、求职协助和职业咨询。",
+    "services": "我们的就业支持服务",
+    "service1": "简历撰写和优化",
+    "service2": "面试准备",
+    "service3": "求职协助",
+    "service4": "职业咨询"
+  },
+  "supportedCountries": {
+    "title": "支持的国家",
+    "subtitle": "我们为以下国家的客户提供服务",
+    "description": "我们的多语言团队随时准备协助来自各个国家的客户。选择您的国家以查看您所在地区的特定联系信息和服务。"
+  }
+}
+

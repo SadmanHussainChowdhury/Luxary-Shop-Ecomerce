@@ -1,0 +1,140 @@
+{
+  "common": {
+    "home": "Accueil",
+    "about": "À propos",
+    "contact": "Contact",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "register": "S'inscrire",
+    "dashboard": "Tableau de bord",
+    "admin": "Administrateur",
+    "submit": "Soumettre",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour",
+    "readMore": "Lire la suite",
+    "getStarted": "Commencer",
+    "learnMore": "En savoir plus"
+  },
+  "nav": {
+    "aboutUs": "À propos de nous",
+    "about": "À propos",
+    "ceoMessage": "Message du PDG",
+    "contactUs": "Contactez-nous",
+    "taxRefund": "Remboursement d'impôt",
+    "incomeTaxRefund": "Remboursement d'impôt sur le revenu",
+    "houseRentTaxRefund": "Remboursement d'impôt sur le loyer",
+    "familyTaxRefund": "Remboursement d'impôt familial",
+    "visaChanges": "Changements de visa",
+    "jobSupport": "Soutien à l'emploi",
+    "helpSupport": "Aide et support"
+  },
+  "home": {
+    "title": "Bienvenue sur MultiLang Site",
+    "subtitle": "Votre partenaire de confiance pour les services de remboursement d'impôt",
+    "description": "Nous sommes spécialisés dans l'aide aux particuliers et aux familles pour naviguer dans le processus complexe des remboursements d'impôt, en veillant à ce que vous receviez les avantages maximum auxquels vous avez droit."
+  },
+  "about": {
+    "title": "À propos de nous",
+    "subtitle": "Votre partenaire de confiance pour les services de remboursement d'impôt",
+    "description": "Bienvenue sur MultiLang Site, votre partenaire de confiance pour les services de remboursement d'impôt. Nous sommes spécialisés dans l'aide aux particuliers et aux familles pour naviguer dans le processus complexe des remboursements d'impôt.",
+    "mission": "Notre mission",
+    "missionText": "Fournir des services exceptionnels de remboursement d'impôt avec intégrité, professionnalisme et attention personnalisée à chaque client.",
+    "vision": "Notre vision",
+    "visionText": "Être le principal fournisseur de services de remboursement d'impôt, reconnu pour notre expertise et notre engagement envers le succès des clients.",
+    "services": "Nos services",
+    "service1": "Remboursement d'impôt sur le revenu",
+    "service2": "Remboursement d'impôt sur le loyer",
+    "service3": "Remboursement d'impôt familial",
+    "service4": "Consultation et conseils d'experts"
+  },
+  "ceoMessage": {
+    "title": "Message du PDG",
+    "greeting": "Chers clients et partenaires,",
+    "message1": "Bienvenue sur MultiLang Site. Je suis honoré de diriger une équipe dédiée à vous aider à naviguer dans les complexités des remboursements d'impôt et à maximiser vos avantages.",
+    "message2": "Notre engagement envers l'excellence, l'intégrité et le service personnalisé nous distingue. Nous comprenons que la situation de chaque client est unique, et nous adaptons nos services pour répondre à vos besoins spécifiques.",
+    "message3": "Merci de nous faire confiance pour vos besoins de remboursement d'impôt. Nous avons hâte de vous servir et de vous aider à atteindre vos objectifs financiers.",
+    "signature": "Cordialement,",
+    "ceoName": "PDG, MultiLang Site"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "subtitle": "Contactez notre bureau",
+    "formTitle": "Formulaire d'inscription",
+    "formSubtitle": "Veuillez remplir tous les champs obligatoires marqués d'un *",
+    "name": "Nom complet",
+    "alienNumber": "Numéro d'enregistrement d'étranger",
+    "passportNumber": "Numéro de passeport",
+    "nationality": "Nationalité",
+    "phone": "Numéro de téléphone",
+    "serviceType": "Type de service",
+    "message": "Informations supplémentaires",
+    "submit": "Soumettre l'inscription",
+    "success": "Votre inscription a été soumise. Merci!",
+    "error": "La soumission a échoué. Veuillez réessayer."
+  },
+  "services": {
+    "incomeTax": "Remboursement d'impôt sur le revenu",
+    "houseRent": "Remboursement d'impôt sur le loyer",
+    "familyTax": "Remboursement d'impôt familial",
+    "other": "Autre"
+  },
+  "incomeTaxRefund": {
+    "title": "Remboursement d'impôt sur le revenu",
+    "description": "Obtenez votre remboursement d'impôt sur le revenu traité rapidement et efficacement avec notre équipe d'experts.",
+    "details": "Nous vous aidons à naviguer dans le système fiscal complexe et nous nous assurons que vous recevez le remboursement maximum auquel vous avez droit.",
+    "benefits": "Avantages",
+    "benefit1": "Délais de traitement rapides",
+    "benefit2": "Conseils d'experts",
+    "benefit3": "Garantie de remboursement maximum",
+    "benefit4": "Service personnalisé"
+  },
+  "houseRentTaxRefund": {
+    "title": "Remboursement d'impôt sur le loyer",
+    "description": "Réclamez votre remboursement d'impôt sur le loyer avec notre assistance experte.",
+    "details": "Nous comprenons les complexités des déductions fiscales sur les loyers et vous aiderons à maximiser votre remboursement.",
+    "benefits": "Avantages",
+    "benefit1": "Documentation complète",
+    "benefit2": "Conseils fiscaux d'experts",
+    "benefit3": "Déductions maximales",
+    "benefit4": "Support dédié"
+  },
+  "familyTaxRefund": {
+    "title": "Remboursement d'impôt familial",
+    "description": "Maximisez les avantages de votre remboursement d'impôt familial avec nos services complets.",
+    "details": "Nous aidons les familles à naviguer dans les déductions et crédits d'impôt pour s'assurer que vous recevez tous les avantages auxquels vous avez droit.",
+    "benefits": "Avantages",
+    "benefit1": "Expertise axée sur la famille",
+    "benefit2": "Tous les crédits éligibles",
+    "benefit3": "Examen complet",
+    "benefit4": "Support continu"
+  },
+  "visaChanges": {
+    "title": "Changements de visa",
+    "description": "Assistance experte pour les changements et mises à jour de statut de visa.",
+    "details": "Nous fournissons un support complet pour les changements de visa, les mises à jour de statut et la documentation associée.",
+    "services": "Nos services de visa",
+    "service1": "Changements de statut de visa",
+    "service2": "Assistance à la documentation",
+    "service3": "Support d'application",
+    "service4": "Services de consultation"
+  },
+  "jobSupport": {
+    "title": "Soutien à l'emploi",
+    "description": "Services complets de recherche d'emploi et de soutien professionnel.",
+    "details": "Nous offrons une gamme de services pour vous aider à trouver un emploi, notamment la rédaction de CV, la préparation aux entretiens, l'assistance à la recherche d'emploi et le conseil professionnel.",
+    "services": "Nos services de soutien à l'emploi",
+    "service1": "Rédaction et optimisation de CV",
+    "service2": "Préparation aux entretiens",
+    "service3": "Assistance à la recherche d'emploi",
+    "service4": "Conseil professionnel"
+  },
+  "supportedCountries": {
+    "title": "Pays pris en charge",
+    "subtitle": "Nous fournissons des services aux clients des pays suivants",
+    "description": "Notre équipe multilingue est prête à assister les clients de divers pays. Sélectionnez votre pays pour voir les informations de contact spécifiques et les services disponibles dans votre région."
+  }
+}
+
