@@ -4,7 +4,7 @@ A modern, multilingual website built with Next.js 14, MongoDB, and NextAuth. Con
 
 ## Features
 
-- 🌍 **Multi-language Support**: 11 languages (English, Arabic, Bengali, Spanish, French, German, Italian, Portuguese, Russian, Japanese, Chinese)
+- 🌍 **Multi-language Support**: 23 languages (English, Arabic, Bengali, Spanish, French, German, Italian, Portuguese, Russian, Japanese, Chinese)
 - 🔐 **Authentication**: NextAuth with role-based access control (Admin/User)
 - 📝 **Registration System**: Contact form with MongoDB storage
 - 👨‍💼 **Admin Panel**: Manage registrations and users
