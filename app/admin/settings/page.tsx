@@ -29,8 +29,6 @@ export default function AdminSettingsPage() {
       youtube: '',
       linkedin: '',
     },
-    footerText: '',
-    footerDescription: '',
     paymentMethods: [] as Array<{ name: string; enabled: boolean; icon?: string }>,
     merchantAccounts: {
       bkash: '',
@@ -69,8 +67,6 @@ export default function AdminSettingsPage() {
           country: data.settings.country || '',
           businessHours: data.settings.businessHours || '',
           socialLinks: data.settings.socialLinks || {},
-          footerText: data.settings.footerText || '',
-          footerDescription: data.settings.footerDescription || '',
           paymentMethods: data.settings.paymentMethods || [],
           merchantAccounts: data.settings.merchantAccounts || { bkash: '', nagad: '', rocket: '' },
           promotionalBanner: data.settings.promotionalBanner || { enabled: true, text: '', link: '' },
@@ -328,33 +324,6 @@ export default function AdminSettingsPage() {
                 </div>
               </>
             )}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div>
-          <h3 className="text-lg font-semibold text-ocean-darkGray mb-4">Footer</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-ocean-darkGray mb-2">Footer Text</label>
-              <textarea
-                value={form.footerText}
-                onChange={(e) => setForm({ ...form, footerText: e.target.value })}
-                rows={2}
-                placeholder="© 2024 Luxury Shop. All rights reserved."
-                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-ocean-darkGray mb-2">Footer Description</label>
-              <textarea
-                value={form.footerDescription}
-                onChange={(e) => setForm({ ...form, footerDescription: e.target.value })}
-                rows={3}
-                placeholder="Your premier destination for luxury products..."
-                className="w-full px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:border-premium-gold"
-              />
-            </div>
           </div>
         </div>
 

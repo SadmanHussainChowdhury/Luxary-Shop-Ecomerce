@@ -2,11 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { ReactNode } from 'react'
 import ClientProviders from '@/components/ClientProviders'
-import PageTransition from '@/components/PageTransition'
-import RouteProgress from '@/components/RouteProgress'
-import WorldClassHeader from '@/components/AliExpressHeader'
-import ProductComparison from '@/components/ProductComparison'
-import PremiumFooter from '@/components/PremiumFooter'
+import ConditionalLayout from '@/components/ConditionalLayout'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -21,15 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body>
         <ClientProviders>
-          <ProductComparison />
-          <div className="min-h-screen flex flex-col relative z-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-            <RouteProgress />
-            <WorldClassHeader />
-            <main className="flex-1">
-              <PageTransition>{children}</PageTransition>
-            </main>
-            <PremiumFooter />
-          </div>
+          <ConditionalLayout>{children}</ConditionalLayout>
         </ClientProviders>
       </body>
     </html>
