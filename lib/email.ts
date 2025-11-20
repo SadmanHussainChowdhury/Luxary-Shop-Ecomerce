@@ -16,36 +16,23 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions): 
   const smtpPassword = process.env.SMTP_PASSWORD
   const fromEmail = process.env.SMTP_FROM || smtpUser || 'noreply@luxuryshop.com'
 
-  console.log('📧 Email configuration check:')
-  console.log('  - SMTP_HOST:', smtpHost ? '✓ Set' : '✗ Not set')
-  console.log('  - SMTP_PORT:', smtpPort ? '✓ Set' : '✗ Not set')
-  console.log('  - SMTP_USER:', smtpUser ? '✓ Set' : '✗ Not set')
-  console.log('  - SMTP_PASSWORD:', smtpPassword ? '✓ Set' : '✗ Not set')
-
   // If SMTP is not configured, use a mock service for development
   if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
     console.log('📧 [MOCK EMAIL] To:', to)
     console.log('📧 [MOCK EMAIL] Subject:', subject)
-    console.log('📧 [MOCK EMAIL] Body:', text || html)
+    console.log('📧 [MOCK EMAIL] HTML:', html.substring(0, 100) + '...')
     console.log('⚠️  SMTP not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD in .env.local')
-    console.log('📧 [MOCK EMAIL] Full HTML:', html.substring(0, 200) + '...')
     
-    // In development, simulate success but log the code
+    // In development, simulate success
     if (process.env.NODE_ENV === 'development') {
-      // Extract code from HTML for easy viewing
-      const codeMatch = html.match(/>(\d{6})</)
-      if (codeMatch) {
-        console.log('📧 [MOCK EMAIL] RESET CODE:', codeMatch[1])
-      }
       return { success: true }
     }
     
-    return { success: false, error: 'Email service not configured. Please configure SMTP settings in .env.local' }
+    return { success: false, error: 'Email service not configured' }
   }
 
   try {
     // Use require to avoid webpack warnings about dynamic imports
-    // This is safe because we're in a try-catch and checking for the module
     let nodemailer: any
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -53,15 +40,15 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions): 
     } catch (requireError: any) {
       if (requireError.code === 'MODULE_NOT_FOUND') {
         console.error('❌ Nodemailer package not installed. Run: npm install nodemailer')
-        return { success: false, error: 'Nodemailer package not installed. Install with: npm install nodemailer' }
+        return { success: false, error: 'Nodemailer package not installed' }
       }
       throw requireError
     }
 
     const transporter = nodemailer.createTransport({
       host: smtpHost,
-      port: parseInt(smtpPort),
-      secure: smtpPort === '465', // true for 465, false for other ports
+      port: parseInt(smtpPort, 10),
+      secure: parseInt(smtpPort, 10) === 465, // true for 465, false for other ports
       auth: {
         user: smtpUser,
         pass: smtpPassword,
@@ -70,79 +57,191 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions): 
 
     const info = await transporter.sendMail({
       from: `"Luxury Shop" <${fromEmail}>`,
-      to: to,
-      subject: subject,
+      to,
+      subject,
       text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML for text version
-      html: html,
+      html,
     })
 
     console.log('✅ Email sent successfully:', info.messageId)
     return { success: true }
   } catch (error: any) {
-    // If it's a module not found error, provide helpful message
-    if (error.code === 'MODULE_NOT_FOUND' || error.message?.includes('Cannot find module') || error.message?.includes('nodemailer')) {
-      console.error('❌ Nodemailer package not installed. Run: npm install nodemailer')
-      return { success: false, error: 'Nodemailer package not installed. Please install it: npm install nodemailer' }
-    }
     console.error('❌ Failed to send email:', error)
     return { success: false, error: error.message || 'Failed to send email' }
   }
 }
 
-// Generate HTML email template for password reset
-export function generatePasswordResetEmail(code: string, name?: string): string {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Password Reset Code</title>
-    </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <h1 style="color: white; margin: 0;">Luxury Shop</h1>
-        <p style="color: white; margin: 10px 0 0 0;">Password Reset Request</p>
-      </div>
-      
-      <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e0e0e0;">
-        <h2 style="color: #333; margin-top: 0;">Hello${name ? ` ${name}` : ''},</h2>
-        
-        <p>You requested to reset your password. Use the code below to reset your password:</p>
-        
-        <div style="background: white; border: 2px solid #FFD700; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0;">
-          <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #333; font-family: monospace;">
-            ${code}
+// Email templates
+export const emailTemplates = {
+  orderConfirmation: (order: any) => ({
+    subject: `Order Confirmation #${order._id?.slice(-8) || 'N/A'}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .order-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .item { padding: 10px 0; border-bottom: 1px solid #eee; }
+            .total { font-size: 24px; font-weight: bold; color: #667eea; margin-top: 20px; }
+            .button { display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Order Confirmed!</h1>
+              <p>Thank you for your purchase</p>
+            </div>
+            <div class="content">
+              <p>Hello ${order.customer?.name || 'Customer'},</p>
+              <p>Your order has been confirmed and we're preparing it for shipment.</p>
+              
+              <div class="order-info">
+                <h2>Order Details</h2>
+                <p><strong>Order #:</strong> ${order._id?.slice(-8) || 'N/A'}</p>
+                <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+                <p><strong>Status:</strong> ${order.status}</p>
+                
+                <h3>Items:</h3>
+                ${order.items?.map((item: any) => `
+                  <div class="item">
+                    <strong>${item.title}</strong> - Qty: ${item.quantity} × $${item.price.toFixed(2)}
+                  </div>
+                `).join('')}
+                
+                <div class="total">Total: $${order.total?.toFixed(2) || '0.00'}</div>
+              </div>
+              
+              <p>You can track your order status at any time by visiting your account.</p>
+              <a href="${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/account/orders" class="button">View Order</a>
+              
+              <p style="margin-top: 30px; color: #666; font-size: 12px;">
+                If you have any questions, please contact our support team.
+              </p>
+            </div>
           </div>
-        </div>
-        
-        <p style="color: #666; font-size: 14px;">
-          This code will expire in <strong>1 hour</strong>. If you didn't request this, please ignore this email.
-        </p>
-        
-        <p style="margin-top: 30px;">
-          <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password" 
-             style="display: inline-block; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-            Reset Password
-          </a>
-        </p>
-        
-        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
-        
-        <p style="color: #999; font-size: 12px; margin: 0;">
-          If you're having trouble clicking the button, copy and paste this URL into your browser:<br>
-          <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password" style="color: #FFD700;">
-            ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password
-          </a>
-        </p>
-      </div>
-      
-      <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-        <p>© ${new Date().getFullYear()} Luxury Shop. All rights reserved.</p>
-        <p>This is an automated message, please do not reply.</p>
-      </div>
-    </body>
-    </html>
-  `
+        </body>
+      </html>
+    `,
+  }),
+
+  orderShipped: (order: any, trackingNumber?: string) => ({
+    subject: `Your Order #${order._id?.slice(-8) || 'N/A'} Has Shipped!`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .tracking { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+            .tracking-number { font-size: 24px; font-weight: bold; color: #10b981; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🚚 Your Order Has Shipped!</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${order.customer?.name || 'Customer'},</p>
+              <p>Great news! Your order has been shipped and is on its way to you.</p>
+              
+              ${trackingNumber ? `
+                <div class="tracking">
+                  <p><strong>Tracking Number:</strong></p>
+                  <div class="tracking-number">${trackingNumber}</div>
+                </div>
+              ` : ''}
+              
+              <p>You can track your order status at any time by visiting your account.</p>
+              <a href="${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/account/orders" class="button" style="display: inline-block; padding: 12px 30px; background: #10b981; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">Track Order</a>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  }),
+
+  orderDelivered: (order: any) => ({
+    subject: `Your Order #${order._id?.slice(-8) || 'N/A'} Has Been Delivered!`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✅ Order Delivered!</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${order.customer?.name || 'Customer'},</p>
+              <p>Your order has been successfully delivered!</p>
+              <p>We hope you love your purchase. If you have any questions or concerns, please don't hesitate to contact us.</p>
+              <p>We'd love to hear your feedback! Please consider leaving a review for your purchased items.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  }),
+
+  passwordReset: (resetToken: string, userName?: string) => ({
+    subject: 'Reset Your Password',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Password Reset Request</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${userName || 'User'},</p>
+              <p>You requested to reset your password. Click the button below to reset it:</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}" class="button">
+                  Reset Password
+                </a>
+              </div>
+              <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                If you didn't request this, please ignore this email. This link will expire in 1 hour.
+              </p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  }),
 }
 
+// Helper function to generate password reset email
+export function generatePasswordResetEmail(resetToken: string, userName?: string) {
+  return emailTemplates.passwordReset(resetToken, userName)
+}

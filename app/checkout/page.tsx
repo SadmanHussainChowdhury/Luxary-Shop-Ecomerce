@@ -65,6 +65,10 @@ export default function CheckoutPage() {
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null)
   const [stripeOrderId, setStripeOrderId] = useState<string | null>(null)
   const [processingStripe, setProcessingStripe] = useState(false)
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [validatingCoupon, setValidatingCoupon] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -149,7 +153,8 @@ export default function CheckoutPage() {
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
   const shipping = 10.00
   const tax = subtotal * 0.08
-  const total = subtotal + shipping + tax
+  const discount = appliedCoupon?.discountAmount || 0
+  const total = Math.max(0, subtotal + shipping + tax - discount)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -239,7 +244,10 @@ export default function CheckoutPage() {
             country: formData.country,
           },
           paymentMethod: formData.paymentMethod,
+          couponCode: appliedCoupon?.code,
           total,
+          shipping: 10.00,
+          tax: subtotal * 0.08,
         }),
       })
 
@@ -703,6 +711,82 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
+              {/* Coupon Code */}
+              <div className="mb-6">
+                {!appliedCoupon ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value.toUpperCase())
+                        setCouponError(null)
+                      }}
+                      placeholder="Coupon code"
+                      className="flex-1 px-4 py-2 border-2 border-ocean-border rounded-lg focus:outline-none focus:ring-2 focus:ring-premium-gold focus:border-transparent"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!couponCode.trim()) return
+                        setValidatingCoupon(true)
+                        setCouponError(null)
+                        try {
+                          const res = await fetch('/api/coupons/validate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              code: couponCode,
+                              subtotal,
+                            }),
+                          })
+                          const data = await res.json()
+                          if (!res.ok) {
+                            throw new Error(data.error || 'Invalid coupon')
+                          }
+                          setAppliedCoupon(data.coupon)
+                          setCouponError(null)
+                        } catch (e: any) {
+                          setCouponError(e.message || 'Invalid coupon code')
+                          setAppliedCoupon(null)
+                        } finally {
+                          setValidatingCoupon(false)
+                        }
+                      }}
+                      disabled={validatingCoupon || !couponCode.trim()}
+                      className="px-4 py-2 bg-premium-gold text-white rounded-lg hover:bg-premium-amber transition disabled:opacity-50"
+                    >
+                      {validatingCoupon ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-green-700">
+                        Coupon Applied: {appliedCoupon.code}
+                      </p>
+                      <p className="text-xs text-green-600">
+                        Discount: -${appliedCoupon.discountAmount.toFixed(2)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAppliedCoupon(null)
+                        setCouponCode('')
+                        setCouponError(null)
+                      }}
+                      className="text-green-700 hover:text-green-900 text-sm font-semibold"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+                {couponError && (
+                  <p className="text-sm text-red-600 mt-2">{couponError}</p>
+                )}
+              </div>
+
               {/* Price Breakdown */}
               <div className="space-y-2 mb-6">
                 <div className="flex justify-between text-ocean-gray">
@@ -717,6 +801,12 @@ export default function CheckoutPage() {
                   <span>Tax</span>
                   <span>${tax.toFixed(2)}</span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount ({appliedCoupon.code})</span>
+                    <span>-${appliedCoupon.discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-xl font-bold text-ocean-darkGray pt-4 border-t border-ocean-border">
                   <span>Total</span>
                   <span className="text-premium-gold">${total.toFixed(2)}</span>

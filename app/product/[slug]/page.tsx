@@ -6,6 +6,7 @@ import RecentlyViewed from '@/components/RecentlyViewed'
 import ProductViewTracker from '@/components/ProductViewTracker'
 import RelatedProducts from '@/components/RelatedProducts'
 import SocialShare from '@/components/SocialShare'
+import ProductReviews from '@/components/ProductReviews'
 import { headers } from 'next/headers'
 
 async function fetchProduct(slug: string) {
@@ -78,6 +79,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
         <RelatedProducts category={product.category} currentSlug={product.slug} />
         <RecentlyViewed />
+        <ProductReviews productId={product._id} productSlug={product.slug} productTitle={product.title} />
       </div>
     </div>
   )

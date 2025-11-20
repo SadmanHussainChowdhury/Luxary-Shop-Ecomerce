@@ -84,16 +84,16 @@ export async function POST(req: NextRequest) {
     let emailError: string | undefined = undefined
     
     if (email && user.email) {
-      const emailHtml = generatePasswordResetEmail(resetCode, user.name)
+      const emailTemplate = generatePasswordResetEmail(resetToken, user.name)
       
       console.log('📧 Attempting to send email to:', user.email)
       console.log('📧 Reset code:', resetCode)
       
       const emailResult = await sendEmail({
         to: user.email,
-        subject: 'Password Reset Code - Luxury Shop',
-        html: emailHtml,
-        text: `Your password reset code is: ${resetCode}. This code expires in 1 hour. Visit ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password to reset your password.`,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+        text: `Your password reset code is: ${resetCode}. This code expires in 1 hour. Visit ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken} to reset your password.`,
       })
 
       console.log('📧 Email send result:', emailResult)

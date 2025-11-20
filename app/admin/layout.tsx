@@ -4,7 +4,7 @@ import { ReactNode, useState, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Package, ShoppingCart, Home, Settings, LogOut, Shield, Grid, FileText, Mail, Users, BarChart3, CheckCircle } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, Home, Settings, LogOut, Shield, Grid, FileText, Mail, Users, BarChart3, CheckCircle, Tag, Star, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
 const navItems = [
@@ -14,6 +14,8 @@ const navItems = [
   { href: '/admin/content', label: 'Content', icon: FileText },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/payment-verification', label: 'Payment Verification', icon: CheckCircle },
+  { href: '/admin/coupons', label: 'Coupons', icon: Tag },
+  { href: '/admin/reviews', label: 'Reviews', icon: Star },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/newsletter', label: 'Newsletter', icon: Mail },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
@@ -32,35 +34,64 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false)
 
   useLayoutEffect(() => {
-    // Set mounted flag
-    setMounted(true)
-    
     // Allow access to login page without auth check
     if (pathname === '/admin/login') {
+      setMounted(true)
       setAuthState('authorized')
       return
     }
 
     // Check authentication synchronously - this runs immediately before paint
-    const isSignedIn = localStorage.getItem(ADMIN_STORAGE_KEY) === 'true'
+    let isSignedIn = false
+    try {
+      isSignedIn = localStorage.getItem(ADMIN_STORAGE_KEY) === 'true'
+    } catch (e) {
+      // localStorage not available (SSR)
+      setMounted(true)
+      setAuthState('denied')
+      return
+    }
+
     if (!isSignedIn) {
+      setMounted(true)
       setAuthState('denied')
       router.push('/admin/login')
       return
     }
 
-    // Load profile
-    const profileRaw = localStorage.getItem(ADMIN_PROFILE_KEY)
-    if (profileRaw) {
-      try {
-        const profile = JSON.parse(profileRaw)
-        setAdminName(profile?.name || DEFAULT_ADMIN_NAME)
-      } catch (error) {
+    // Load profile with better error handling
+    try {
+      const profileRaw = localStorage.getItem(ADMIN_PROFILE_KEY)
+      if (profileRaw && profileRaw.trim()) {
+        try {
+          const profile = JSON.parse(profileRaw)
+          if (profile && typeof profile === 'object' && profile.name && typeof profile.name === 'string') {
+            setAdminName(profile.name)
+          } else {
+            setAdminName(DEFAULT_ADMIN_NAME)
+          }
+        } catch (parseError) {
+          // Invalid JSON, use default
+          console.warn('Failed to parse admin profile:', parseError)
+          setAdminName(DEFAULT_ADMIN_NAME)
+          // Clean up invalid data
+          try {
+            localStorage.removeItem(ADMIN_PROFILE_KEY)
+          } catch (e) {
+            // Ignore cleanup errors
+          }
+        }
+      } else {
         setAdminName(DEFAULT_ADMIN_NAME)
       }
+    } catch (error) {
+      // Fallback for any localStorage errors
+      console.warn('Error accessing localStorage:', error)
+      setAdminName(DEFAULT_ADMIN_NAME)
     }
 
-    // Authorize immediately
+    // Set mounted and authorize immediately
+    setMounted(true)
     setAuthState('authorized')
   }, [router, pathname])
 
@@ -73,16 +104,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     router.replace('/admin/login')
   }
 
-  // Show loading while checking auth (prevents hydration mismatch)
-  if (!mounted || authState === 'pending') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-ocean-lightest">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 border-4 border-premium-gold border-t-transparent rounded-full animate-spin" />
-          <div className="text-ocean-gray text-sm">Verifying admin access…</div>
-        </div>
-      </div>
-    )
+  // During SSR or initial mount, return null to avoid hydration mismatch
+  // The auth check happens synchronously in useLayoutEffect, so this should be instant
+  if (!mounted) {
+    return null
+  }
+
+  // If still pending after mount (shouldn't happen, but safety check)
+  if (authState === 'pending') {
+    return null // Don't show loading, just wait for auth check to complete
   }
 
   if (authState === 'denied') {

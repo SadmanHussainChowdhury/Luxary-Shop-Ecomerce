@@ -48,17 +48,52 @@ export default function AdminOrderDetailPage() {
 
   useEffect(() => { load() }, [id])
 
+  const [trackingNumber, setTrackingNumber] = useState('')
+  const [shippingCarrier, setShippingCarrier] = useState('')
+  const [estimatedDelivery, setEstimatedDelivery] = useState('')
+
+  useEffect(() => {
+    if (order) {
+      setTrackingNumber(order.trackingNumber || '')
+      setShippingCarrier(order.shippingCarrier || '')
+      setEstimatedDelivery(order.estimatedDelivery ? new Date(order.estimatedDelivery).toISOString().split('T')[0] : '')
+    }
+  }, [order])
+
   async function updateStatus(status: string) {
     const res = await fetch(`/api/admin/orders/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ 
+        status,
+        trackingNumber: trackingNumber || undefined,
+        shippingCarrier: shippingCarrier || undefined,
+        estimatedDelivery: estimatedDelivery || undefined,
+      })
     })
     if (!res.ok) {
       toast.error('Update failed')
       return
     }
     toast.success(`Order marked as ${statusLabels[status as keyof typeof statusLabels] || status}`)
+    load()
+  }
+
+  async function updateTracking() {
+    const res = await fetch(`/api/admin/orders/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        trackingNumber: trackingNumber || undefined,
+        shippingCarrier: shippingCarrier || undefined,
+        estimatedDelivery: estimatedDelivery || undefined,
+      })
+    })
+    if (!res.ok) {
+      toast.error('Failed to update tracking')
+      return
+    }
+    toast.success('Tracking information updated')
     load()
   }
 
@@ -272,6 +307,62 @@ export default function AdminOrderDetailPage() {
                 <span>Total</span>
                 <span>${order.total?.toFixed(2) || '0.00'}</span>
               </div>
+            </div>
+          </motion.div>
+
+          {/* Tracking Information */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white border border-ocean-border rounded-xl p-6 shadow-lg"
+          >
+            <h2 className="text-xl font-bold text-ocean-darkGray mb-4 flex items-center gap-2">
+              <Package size={24} />
+              Shipping & Tracking
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-ocean-darkGray mb-2">
+                  Tracking Number
+                </label>
+                <input
+                  type="text"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  placeholder="Enter tracking number"
+                  className="w-full px-4 py-2 border border-ocean-border rounded-lg focus:outline-none focus:ring-2 focus:ring-premium-gold"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ocean-darkGray mb-2">
+                  Shipping Carrier
+                </label>
+                <input
+                  type="text"
+                  value={shippingCarrier}
+                  onChange={(e) => setShippingCarrier(e.target.value)}
+                  placeholder="e.g., FedEx, UPS, DHL"
+                  className="w-full px-4 py-2 border border-ocean-border rounded-lg focus:outline-none focus:ring-2 focus:ring-premium-gold"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ocean-darkGray mb-2">
+                  Estimated Delivery
+                </label>
+                <input
+                  type="date"
+                  value={estimatedDelivery}
+                  onChange={(e) => setEstimatedDelivery(e.target.value)}
+                  className="w-full px-4 py-2 border border-ocean-border rounded-lg focus:outline-none focus:ring-2 focus:ring-premium-gold"
+                />
+              </div>
+              <button
+                onClick={updateTracking}
+                className="w-full px-4 py-2 bg-premium-gold text-white rounded-lg hover:bg-premium-amber transition"
+              >
+                Update Tracking
+              </button>
             </div>
           </motion.div>
 

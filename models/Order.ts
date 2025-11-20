@@ -31,6 +31,14 @@ export interface IOrder {
   stripePaymentIntentId?: string
   customer?: ICustomerInfo
   paymentMethod?: string
+  trackingNumber?: string
+  shippingCarrier?: string
+  estimatedDelivery?: Date
+  couponCode?: string
+  discountAmount?: number
+  subtotal?: number
+  shipping?: number
+  tax?: number
   createdAt: Date
   updatedAt: Date
 }
@@ -64,6 +72,14 @@ const OrderSchema = new Schema<IOrder>({
   stripePaymentIntentId: { type: String, index: true },
   customer: { type: CustomerInfoSchema },
   paymentMethod: { type: String },
+  trackingNumber: { type: String, index: true },
+  shippingCarrier: { type: String },
+  estimatedDelivery: { type: Date },
+  couponCode: { type: String },
+  discountAmount: { type: Number, min: 0, default: 0 },
+  subtotal: { type: Number, min: 0 },
+  shipping: { type: Number, min: 0, default: 0 },
+  tax: { type: Number, min: 0, default: 0 },
 }, { timestamps: true })
 
 OrderSchema.index({ createdAt: -1 })
