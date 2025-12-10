@@ -16,6 +16,7 @@ out/
 .env.development.local
 .env.test.local
 .env.production.local
+!.env.example
 
 # OS
 .DS_Store
@@ -46,5 +47,7 @@ Luxentra/
 multilangSite/
 portfolio/
 portfolio-nextjs/
+codecanyon_submission/
+community-issue-backup/
 
 

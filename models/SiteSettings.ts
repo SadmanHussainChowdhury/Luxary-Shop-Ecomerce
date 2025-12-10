@@ -85,26 +85,26 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
     },
     footerText: { type: String, default: '© 2024 Luxury Shop. All rights reserved.' },
     footerDescription: { type: String, default: 'Your premier destination for luxury products. Experience world-class quality and exceptional service.' },
-      paymentMethods: {
-        type: [PaymentMethodSchema],
-        default: [
-          { name: 'Visa', enabled: true },
-          { name: 'Mastercard', enabled: true },
-          { name: 'Amex', enabled: true },
-          { name: 'PayPal', enabled: true },
-          { name: 'Apple Pay', enabled: true },
-          { name: 'Google Pay', enabled: true },
-          { name: 'bKash', enabled: true },
-          { name: 'Nagad', enabled: true },
-          { name: 'Rocket', enabled: true },
-          { name: 'Cash on Delivery', enabled: true },
-        ],
-      },
-      merchantAccounts: {
-        bkash: { type: String, trim: true },
-        nagad: { type: String, trim: true },
-        rocket: { type: String, trim: true },
-      },
+    paymentMethods: {
+      type: [PaymentMethodSchema],
+      default: [
+        { name: 'Visa', enabled: true },
+        { name: 'Mastercard', enabled: true },
+        { name: 'Amex', enabled: true },
+        { name: 'PayPal', enabled: true },
+        { name: 'Apple Pay', enabled: true },
+        { name: 'Google Pay', enabled: true },
+        { name: 'bKash', enabled: true },
+        { name: 'Nagad', enabled: true },
+        { name: 'Rocket', enabled: true },
+        { name: 'Cash on Delivery', enabled: true },
+      ],
+    },
+    merchantAccounts: {
+      bkash: { type: String, trim: true },
+      nagad: { type: String, trim: true },
+      rocket: { type: String, trim: true },
+    },
     promotionalBanner: {
       enabled: { type: Boolean, default: true },
       text: { type: String, default: 'New User? Get $10 off! • Free Shipping on orders over $50' },
@@ -115,7 +115,6 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
 )
 
 // Only one settings document should exist
-SiteSettingsSchema.index({ _id: 1 }, { unique: true })
 
 export const SiteSettings = models.SiteSettings || model<ISiteSettings>('SiteSettings', SiteSettingsSchema)
 
